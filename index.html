@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#150c28"><link rel="icon" href="icon-192.png"><title>TF Tournaments – Free Fire Paid Scrims</title>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f1ff;--panel:#fff;--panel2:#ece4fb;--ink:#1d1233;--mute:#5d5278;--flame:#e8500e;--gold:#b87900;--line:#d8cdf0;--onflame:#fff;--ok:#1a8a4a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150c28;--panel:#21143a;--panel2:#2c1c4d;--ink:#f6f0ff;--mute:#b5a8d4;--flame:#ff6b2c;--gold:#ffc93c;--line:#3b2a63;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#150c28;--panel:#21143a;--panel2:#2c1c4d;--ink:#f6f0ff;--mute:#b5a8d4;--flame:#ff6b2c;--gold:#ffc93c;--line:#3b2a63;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.55 Barlow,system-ui,sans-serif}
+h1,h2,h3,.logo{font-family:"Russo One",Impact,sans-serif;font-weight:400;line-height:1.05;margin:0}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.logo{font-size:22px;text-decoration:none}.logo b{color:var(--flame);font-weight:400}
+nav a{margin-left:18px;text-decoration:none;color:var(--mute);font-weight:600}
+nav a:hover{color:var(--ink)}
+.btn{display:inline-block;border:0;border-radius:8px;background:var(--flame);color:var(--onflame);font:600 16px Barlow,sans-serif;padding:12px 22px;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}.scroll{overflow-x:auto}.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}.tabs button{font:600 15px Barlow,sans-serif;padding:8px 18px;border-radius:99px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.tabs button[aria-pressed=true]{background:var(--flame);border-color:var(--flame);color:var(--onflame)}.empty{padding:28px;border:2px dashed var(--line);border-radius:14px;color:var(--mute)}.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px}.form .full{grid-column:1/-1}.btn.sm{padding:6px 12px;font-size:14px}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.hero{padding:48px 0 56px;display:grid;gap:32px;grid-template-columns:1.3fr 1fr;align-items:center}
+.hero h1{font-size:clamp(38px,7vw,76px);letter-spacing:-.01em}
+.hero p{max-width:46ch;color:var(--mute);font-size:18px;margin:18px 0 26px}
+.next{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:22px}
+.next small{color:var(--mute);font-weight:600}
+.clock{display:flex;gap:10px;margin:10px 0 14px}
+.clock div{flex:1;background:var(--panel2);border-radius:10px;padding:10px 0;text-align:center}
+.clock b{display:block;font:400 30px "Russo One",sans-serif;color:var(--flame)}
+.clock span{font-size:12px;color:var(--mute)}
+section{padding:40px 0}
+h2{font-size:clamp(26px,4vw,38px);margin-bottom:8px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:60ch}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card.hot{border-color:var(--flame)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.card h3{font-size:22px}
+.tag{font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--panel2);color:var(--mute)}
+.money{display:flex;gap:22px}
+.money div{display:flex;flex-direction:column}
+.money b{font:400 26px "Russo One",sans-serif}
+.money .prize{color:var(--gold)}
+.money span{font-size:13px;color:var(--mute)}
+.meta{font-size:15px;color:var(--mute)}
+.slots{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}
+.slots i{aspect-ratio:1;border-radius:4px;background:var(--panel2);border:1px solid var(--line)}
+.slots i.f{background:var(--flame);border-color:var(--flame)}
+.slots i.me{background:var(--gold);border-color:var(--gold)}
+.left{font-size:14px;font-weight:600}
+.steps{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));counter-reset:s}
+.steps div{background:var(--panel);border-left:5px solid var(--flame);border-radius:8px;padding:16px 18px;counter-increment:s}
+.steps div::before{content:"Step " counter(s);display:block;font-size:13px;color:var(--gold);font-weight:600}
+.steps h3{font-size:19px;margin:4px 0 6px}.steps p{margin:0;color:var(--mute);font-size:15px}
+details{background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600}
+details p{color:var(--mute);margin:10px 0 0}
+footer{border-top:2px solid var(--line);padding:28px 0;color:var(--mute);font-size:14px;margin-top:20px}
+dialog{border:2px solid var(--flame);border-radius:16px;background:var(--panel);color:var(--ink);padding:0;width:min(460px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto}
+dialog::backdrop{background:rgba(10,5,22,.72)}
+.dlg{padding:22px;display:grid;gap:12px}
+.dlg h3{font-size:24px}
+label{display:grid;gap:4px;font-size:14px;font-weight:600;color:var(--mute)}
+input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.err{color:var(--flame);font-size:14px;min-height:1.2em;margin:0}
+.pay{background:var(--panel2);border-radius:10px;padding:14px;font-size:15px}
+.pay b{font-size:18px;color:var(--gold)}
+.code{font:400 28px "Russo One",sans-serif;text-align:center;color:var(--gold);letter-spacing:.06em;background:var(--panel2);border-radius:10px;padding:14px}
+.acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:760px){.hero{grid-template-columns:1fr}nav{display:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="logo" href="#top">TF<b> Tournaments</b></a>
+  <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
+</header>
+<main id="top">
+<div class="hero">
+  <div>
+    <h1>Pay once. Land in a lobby that plays to win.</h1>
+    <p>Paid Free Fire tournaments in Solo, Duo and Squad. Pick a slot, pay the entry fee, get your room ID before the match.</p>
+    <a class="btn" href="#scrims">See open tournaments</a>
+  </div>
+  <div class="next">
+    <small>Next tournament starts in</small>
+    <div class="clock"><div><b id="h">--</b><span>hours</span></div><div><b id="m">--</b><span>minutes</span></div><div><b id="s">--</b><span>seconds</span></div></div>
+    <div class="row"><span id="nextName" style="font-weight:600">Nothing scheduled yet</span><button class="btn" id="nextJoin" hidden>Join</button></div>
+  </div>
+</div>
+
+<section id="scrims">
+  <h2>Open tournaments</h2>
+  <p class="sub">Each box is one slot (a player in Solo, a team in Duo and Squad). Orange is taken, gold is yours.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="grid" id="list"><div class="empty">Loading tournaments…</div></div>
+</section>
+
+<section id="admin" hidden>
+  <h2>Admin panel</h2>
+  <p class="sub">Only you can see this. Add a tournament and it appears for every player straight away.</p>
+  <div class="form" id="af">
+    <label>Tournament name<input id="a1" maxlength="30" placeholder="Night Rush"></label>
+    <label>Mode<select id="a2"><option value="solo">Solo</option><option value="duo">Duo</option><option value="squad" selected>Squad</option></select></label>
+    <label>Entry fee (₹)<input id="a3" type="number" min="0" value="50"></label>
+    <label>Prize pool (₹)<input id="a4" type="number" min="0" value="1500"></label>
+    <label>Prize per kill (₹)<input id="a8" type="number" min="0" value="5"></label>
+    <label>Date and time<input id="a5" type="datetime-local"></label>
+    <label>Total slots<input id="a6" type="number" min="2" max="60" value="12"></label>
+    <label>Map<input id="a7" maxlength="20" value="Bermuda"></label>
+    <div class="full row"><p class="err" id="ae"></p><button class="btn" id="aadd">Add tournament</button></div>
+  </div>
+  <h3 style="font-size:20px;margin:24px 0 10px">Your tournaments</h3>
+  <div class="scroll"><table id="at"></table></div>
+  <h3 style="font-size:20px;margin:24px 0 10px">Registrations</h3>
+  <div class="scroll"><table id="ar"></table></div>
+</section>
+
+<section id="how">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div><h3>Choose a tournament</h3><p>Pick Solo, Duo or Squad, and the entry fee and time that suit you.</p></div>
+    <div><h3>Register</h3><p>Enter your in-game name and Free Fire UID (and your partner or teammates).</p></div>
+    <div><h3>Pay the entry fee</h3><p>Pay by UPI and add your transaction ID. Your slot is held until we verify it.</p></div>
+    <div><h3>Get the room ID</h3><p>Room ID and password go to you 15 minutes before start.</p></div>
+  </div>
+</section>
+
+<section id="rules">
+  <h2>Rules</h2>
+  <div class="grid">
+    <div class="card"><h3>Fair play</h3><p class="meta" style="margin:0">No hacks, macros, teaming with other players or stream sniping. Any of these means disqualification and no refund.</p></div>
+    <div class="card"><h3>Scoring</h3><p class="meta" style="margin:0">Placement points plus 1 point per kill across 3 matches. Highest total wins. Ties go to most Booyahs.</p></div>
+    <div class="card"><h3>Be on time</h3><p class="meta" style="margin:0">Join the custom room within 10 minutes of the room ID being shared. Late entries lose their slot.</p></div>
+  </div>
+</section>
+
+<section id="faq">
+  <h2>Questions</h2>
+  <details><summary>How do I get my money back?</summary><p>If a tournament is cancelled or doesn’t fill, every entry fee is refunded. Fees are not refunded after the room ID has been shared.</p></details>
+  <details><summary>How are prizes paid?</summary><p>Winners receive their prize by UPI within 24 hours of the final match, after a quick check of results.</p></details>
+  <details><summary>What is the difference between the modes?</summary><p>Solo is one player per slot, Duo is a pair, and Squad is a team of 4.</p></details>
+  <details><summary>Do I need to be a certain level?</summary><p>You need Free Fire level 40 or higher, and the UID you register must be the one you play with.</p></details>
+</section>
+</main>
+<footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
+</div>
+<dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
+<dialog id="dlg"><div class="dlg" id="dbody"></div></dialog>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,signInAnonymously,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {firebaseConfig,ADMIN_EMAIL} from "./firebase-config.js";
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+const app=initializeApp(firebaseConfig),auth=getAuth(app),fdb=getFirestore(app);
+
+const $=id=>document.getElementById(id);
+const MODES={solo:"Solo",duo:"Duo",squad:"Squad (4)"};
+let T=[],J=[],V=new Set(),R=[],mode="all",isAdmin=false,db=fdb,mine={},adminUnsubs=[];
+try{mine=JSON.parse(localStorage.getItem("tf_regs")||"{}")}catch(e){}
+const fmt=d=>new Date(d).toLocaleString([], {weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const taken=id=>J.filter(j=>j.tid===id).length;
+const upcoming=()=>T.filter(t=>t.start>Date.now()).sort((a,b)=>a.start-b.start);
+
+function render(){
+ $("tabs").innerHTML=["all","solo","duo","squad"].map(m=>`<button data-m="${m}" aria-pressed="${m===mode}">${m==="all"?"All":MODES[m].replace(" (4)","")}</button>`).join("");
+ $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;render()});
+ const list=upcoming().filter(t=>mode==="all"||t.mode===mode);
+ if(!list.length){$("list").innerHTML=`<div class="empty">${db?"No tournaments in this mode right now. Check back soon.":"Live tournaments load when you open this page signed in to claude.ai."}</div>`}
+ else $("list").innerHTML=list.map(t=>{
+  const n=taken(t.id),left=t.slots-n;let b="";
+  for(let i=0;i<t.slots;i++)b+=`<i class="${i<n?(mine[t.id]&&i===n-1?"me":"f"):""}"></i>`;
+  return `<article class="card ${t.fee>=100?"hot":""}">
+   <div class="row"><h3>${esc(t.name)}</h3><span class="tag">${MODES[t.mode]}</span></div>
+   <div class="money"><div><b>₹${t.fee}</b><span>entry fee</span></div><div><b class="prize">₹${t.prize}</b><span>prize pool</span></div>${t.kill?`<div><b class="prize">₹${t.kill}</b><span>per kill</span></div>`:""}</div>
+   <div class="meta">${fmt(t.start)} · ${esc(t.map)}</div>
+   <div class="slots" role="img" aria-label="${n} of ${t.slots} slots taken">${b}</div>
+   <div class="row"><span class="left">${left>0?left+" slots left":"Full"}</span>
+   <button class="btn" data-id="${t.id}" ${left>0&&!mine[t.id]?"":"disabled"}>${mine[t.id]?"Registered":left>0?"Join":"Full"}</button></div></article>`}).join("");
+ $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
+ const nx=upcoming()[0];
+ $("nextJoin").hidden=!nx;
+ if(nx){$("nextName").textContent=nx.name+" · "+MODES[nx.mode]+" · ₹"+nx.fee;$("nextJoin").onclick=()=>openJoin(nx.id)}
+ else $("nextName").textContent="Nothing scheduled yet";
+ if(isAdmin)renderAdmin();
+}
+function tick(){
+ const nx=upcoming()[0],p=x=>String(x).padStart(2,"0");
+ if(!nx){["h","m","s"].forEach(k=>$(k).textContent="--");return}
+ const r=Math.max(0,Math.floor((nx.start-Date.now())/1000));
+ $("h").textContent=p(Math.floor(r/3600));$("m").textContent=p(Math.floor(r%3600/60));$("s").textContent=p(r%60);
+}
+setInterval(tick,1000);
+
+function renderAdmin(){
+ const all=[...T].sort((a,b)=>a.start-b.start);
+ $("at").innerHTML=`<tr><th>Name</th><th>Mode</th><th>Fee</th><th>Starts</th><th>Slots</th><th></th></tr>`+(all.map(t=>`<tr><td>${esc(t.name)}</td><td>${MODES[t.mode]}</td><td>₹${t.fee}</td><td>${fmt(t.start)}</td><td>${taken(t.id)}/${t.slots}</td><td><button class="btn ghost sm" data-del="${t.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="6">No tournaments yet.</td></tr>`);
+ $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
+ const tn=Object.fromEntries(T.map(t=>[t.id,t.name]));
+ $("ar").innerHTML=`<tr><th>Tournament</th><th>Team / player</th><th>Leader</th><th>UID</th><th>WhatsApp</th><th>UPI txn ID</th><th>Paid</th></tr>`+(R.map(r=>`<tr><td>${esc(tn[r.tid]||"(deleted)")}</td><td>${esc(r.team)}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.txn)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td></tr>`).join("")||`<tr><td colspan="7">No registrations yet.</td></tr>`);
+ $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{const d=doc(db,"verified",c.dataset.v);(c.checked?setDoc(d,{ok:true}):deleteDoc(d)).catch(()=>{})});
+}
+$("aadd").onclick=async()=>{
+ const g=i=>$("a"+i).value.trim(),e=$("ae");e.textContent="";
+ const start=new Date($("a5").value).getTime();
+ if(!g(1))return e.textContent="Enter a tournament name.";
+ if(!start||start<Date.now())return e.textContent="Pick a start time in the future.";
+ if(!db)return e.textContent="Database unavailable. Open this page signed in.";
+ try{
+  await setDoc(doc(db,"tournaments","t"+Date.now().toString(36)),{name:g(1),mode:g(2),fee:+g(3)||0,prize:+g(4)||0,kill:+g(8)||0,start,slots:Math.min(60,Math.max(2,+g(6)||12)),map:g(7)||"Bermuda"});
+  $("a1").value="";e.textContent="Tournament added.";
+ }catch(x){e.textContent="Could not save: "+(x.message||"permission denied")}
+};
+$("a2").onchange=()=>{$("a6").value={solo:48,duo:24,squad:12}[$("a2").value]};
+
+const dlg=$("dlg"),body=$("dbody"),close=()=>dlg.close();
+function openJoin(id){
+ const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots)return;
+ const solo=t.mode==="solo";
+ body.innerHTML=`<h3>Join ${esc(t.name)}</h3><div class="meta">${MODES[t.mode]} · ${fmt(t.start)} · Entry ₹${t.fee}</div>
+ ${solo?"":`<label>${t.mode==="duo"?"Duo":"Squad"} name<input id="f0" maxlength="24" autocomplete="off"></label>`}
+ <label>${solo?"Your":"Leader’s"} in-game name<input id="f2" maxlength="24" autocomplete="off"></label>
+ <label>${solo?"Your":"Leader’s"} Free Fire UID<input id="f3" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+ ${solo?"":`<label>${t.mode==="duo"?"Partner’s in-game name":"Teammates’ in-game names"}<input id="f5" maxlength="80" autocomplete="off"></label>`}
+ <label>WhatsApp number<input id="f4" inputmode="tel" maxlength="15" autocomplete="tel"></label>
+ <p class="err" id="e"></p>
+ <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n">Continue to payment</button></div>`;
+ $("c").onclick=close;
+ $("n").onclick=()=>{
+  const v={team:solo?$("f2").value.trim():$("f0").value.trim(),ign:$("f2").value.trim(),uid:$("f3").value.trim(),phone:$("f4").value.trim().replace(/\s/g,""),mates:solo?"":$("f5").value.trim()};
+  if(!v.team||!v.ign)return $("e").textContent=solo?"Enter your in-game name.":"Enter the team name and leader’s in-game name.";
+  if(!solo&&!v.mates)return $("e").textContent=t.mode==="duo"?"Enter your partner’s name.":"Enter your teammates’ names.";
+  if(!/^\d{8,12}$/.test(v.uid))return $("e").textContent="UID should be 8 to 12 digits.";
+  if(!/^\+?\d{10,14}$/.test(v.phone))return $("e").textContent="Enter a valid WhatsApp number.";
+  if(J.some(j=>j.id===t.id+"_"+v.uid))return $("e").textContent="This UID is already registered for this tournament.";
+  pay(t,v);
+ };
+ if(!dlg.open)dlg.showModal();
+}
+function pay(t,v){
+ body.innerHTML=`<h3>Pay ₹${t.fee}</h3>
+ <div class="pay">Send <b>₹${t.fee}</b> by UPI to <b>7889354015@ptsbi</b> and keep the transaction ID.</div>
+ <label>UPI transaction ID<input id="tx" maxlength="24" autocomplete="off"></label>
+ <p class="err" id="e"></p>
+ <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="d">Confirm slot</button></div>`;
+ $("b").onclick=()=>openJoin(t.id);
+ $("d").onclick=async()=>{
+  const x=$("tx").value.trim();
+  if(x.length<8)return $("e").textContent="Enter the transaction ID from your UPI app (at least 8 characters).";
+  const rid=t.id+"_"+v.uid;$("d").disabled=true;
+  try{
+   if(!auth.currentUser)await signInAnonymously(auth);
+   await setDoc(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,team:v.team+(v.mates?" ("+v.mates+")":""),ign:v.ign,uid:v.uid,phone:v.phone,txn:x,at:Date.now()});
+   await setDoc(doc(db,"joins",rid),{tid:t.id});
+  }catch(err){$("d").disabled=false;return $("e").textContent=err.code==="permission-denied"?"This UID is already registered for this tournament.":"Could not register. Check your connection and try again."}
+  const code="TF-"+Math.random().toString(36).slice(2,6).toUpperCase();
+  mine[t.id]=code;try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
+  body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">Your slot in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
+  <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn" id="o">Done</button></div>`;
+  $("o").onclick=close;
+ };
+}
+dlg.addEventListener("click",e=>{if(e.target===dlg)close()});
+
+render();tick();
+onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{});
+onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{});
+function setAdmin(on){
+ isAdmin=on;$("admin").hidden=!on;$("navAdmin").hidden=!on;$("navOut").hidden=!on;$("alogin").hidden=on;
+ adminUnsubs.forEach(u=>u());adminUnsubs=[];
+ if(on){
+  adminUnsubs.push(onSnapshot(collection(db,"registrations"),s=>{R=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},()=>{}));
+  adminUnsubs.push(onSnapshot(collection(db,"verified"),s=>{V=new Set(s.docs.map(d=>d.id));render()},()=>{}));
+ }
+ render();
+}
+onAuthStateChanged(auth,u=>{
+ if(!u){signInAnonymously(auth).catch(()=>{});return}
+ setAdmin(!!u.email&&u.email.toLowerCase()===ADMIN_EMAIL.toLowerCase());
+});
+const ld=$("ldlg");
+$("alogin").onclick=e=>{e.preventDefault();$("lerr").textContent="";ld.showModal()};
+$("lc").onclick=()=>ld.close();
+$("ls").onclick=async()=>{
+ try{await signInWithEmailAndPassword(auth,$("le").value.trim(),$("lp").value);
+  if(auth.currentUser.email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await signOut(auth);$("lerr").textContent="This account is not an admin.";return}
+  $("lp").value="";ld.close();location.hash="admin"}
+ catch(e){$("lerr").textContent="Wrong email or password."}
+};
+$("navOut").onclick=async e=>{e.preventDefault();await signOut(auth);location.hash="top"};
+
+</script>
+</body>
+</html>
