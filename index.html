@@ -290,7 +290,7 @@ function details(c){
   c.v=v;pay(c);
  };
 }
-const PAYEE={upi:"7889354015@ptsbi",name:"TF TOURNAMENTS"};
+const PAYEE={upi:"manikg102n@oksbi",name:"TF TOURNAMENTS"};
 function pay(c){
  const t=c.t;
  const upiLink=`upi://pay?pa=${PAYEE.upi}&pn=${encodeURIComponent(PAYEE.name)}&am=${t.fee}&cu=INR&tn=${encodeURIComponent(t.name+" entry")}`;
