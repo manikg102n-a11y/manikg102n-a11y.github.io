@@ -95,7 +95,7 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
   <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
-  <div class="hr"><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
+  <div class="hr"><button class="btn ghost sm" id="profileBtn" type="button">Player profile</button><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
 </header>
 <main id="top">
 <div class="hero">
@@ -175,14 +175,15 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 </main>
 <footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
 </div>
+<dialog id="profileDlg"><div class="dlg" id="profileBody"></div></dialog>
 <dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
 <dialog id="ndlg"><div class="dlg" id="nbody"></div></dialog>
 <dialog id="dlg"><div class="dlg" id="dbody"></div></dialog>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,signInAnonymously,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,writeBatch,getDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInAnonymously,signInWithEmailAndPassword,createUserWithEmailAndPassword,EmailAuthProvider,linkWithCredential,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,writeBatch,getDoc,getDocs,query,where} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import * as CFG from "./firebase-config.js";
 const {firebaseConfig,ADMIN_EMAIL}=CFG, CONTACT=CFG.CONTACT||{};
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
@@ -196,7 +197,7 @@ const MODE={
 const MODES=Object.fromEntries(Object.entries(MODE).map(([k,v])=>[k,v.name]));
 const GROUPS=[["br","Battle Royale","Big lobbies with many players. Solo, Duo and Squad."],["cs","Clash Squad","Fast team fights. Pick 1v1, 2v2 or 4v4."],["lw","Lone Wolf","Quick duels. Pick 1v1 or 2v2."]];
 const SUBS={br:[["1","Solo"],["2","Duo"],["4","Squad"]],cs:[["1","1v1"],["2","2v2"],["4","4v4"]],lw:[["1","1v1"],["2","2v2"]]};
-let cat="all",sub="all";
+let cat="all",sub="all",playerProfile={};
 const isBR=t=>!MODE[t.mode]||MODE[t.mode].g==="br";
 const slotTag=(t,i)=>isBR(t)||i>25?String(i+1):String.fromCharCode(65+i);
 const slotName=(t,i)=>(isBR(t)?"Slot ":"Team ")+slotTag(t,i);
@@ -314,7 +315,7 @@ async function roomDialog(tid){
 }
 function openJoin(id){
  const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots*seatsOf(t))return;
- pick({t,slot:null});
+ pick({t,slot:null,v:{ign:playerProfile.ign||"",uid:playerProfile.uid||"",phone:playerProfile.phone||""},payerUpi:playerProfile.upi||""});
  if(!dlg.open)dlg.showModal();
 }
 function slotInfo(c){
@@ -362,7 +363,7 @@ function pay(c){
  c.paymentOpened=false;
  body.innerHTML=`<h3>Pay ₹${t.fee}</h3>
  <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using any UPI app. After paying, return here and enter the UPI ID you paid from.</div>
- <label>Your UPI ID<input id="payerupi" maxlength="100" autocomplete="off" placeholder="example@upi" inputmode="email"></label>
+ <label>Your UPI ID<input id="payerupi" maxlength="100" autocomplete="off" placeholder="example@upi" inputmode="email" value="${esc(playerProfile.upi||"")}"></label>
  <p class="meta" style="margin:0">Tap <b>Join Slot · ₹${t.fee}</b> once to open your UPI app. After payment, return, enter your UPI ID and tap the same button again to register.</p>
  <p class="err" id="e"></p>
  <div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
@@ -399,6 +400,7 @@ async function submit(c){
   try{await bt.commit();got=seat}catch(err){if(err.code!=="permission-denied")return pick(Object.assign(c,{msg:"Could not register. Check your connection and try again."}))}
  }
  if(got==null)return pick(Object.assign(c,{msg:"That slot just filled up, or this UID is already registered for this tournament. Pick another slot."}));
+ if(auth.currentUser?.email){playerProfile={...playerProfile,...v,upi:c.payerUpi,email:auth.currentUser.email};setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true}).catch(()=>{});}
  const code="TF-"+Math.random().toString(36).slice(2,6).toUpperCase();
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
@@ -421,9 +423,31 @@ function setAdmin(on){
  }
  render();
 }
+// Player accounts and private player profile
+const profileDlg=$("profileDlg"),profileBody=$("profileBody");
+async function loadPlayerProfile(){
+ playerProfile={};
+ if(!auth.currentUser?.email)return;
+ try{const snap=await getDoc(doc(db,"profiles",auth.currentUser.uid));if(snap.exists())playerProfile=snap.data()}catch(e){console.warn("Profile could not be loaded",e)}
+}
+function profileScreen(message=""){
+ const signed=!!auth.currentUser?.email;
+ profileBody.innerHTML=`<h3>Player profile</h3>
+ <p class="meta" style="margin:0">${signed?`Signed in as ${esc(auth.currentUser.email)}`:"Create an account or sign in to save your player profile and view your registration history."}</p>
+ ${signed?`<label>In-game name<input id="pIgn" maxlength="24" value="${esc(playerProfile.ign||"")}"></label><label>Free Fire UID<input id="pUid" inputmode="numeric" maxlength="12" value="${esc(playerProfile.uid||"")}"></label><label>WhatsApp number<input id="pPhone" inputmode="tel" maxlength="15" value="${esc(playerProfile.phone||"")}"></label><label>UPI ID (private)<input id="pUpi" maxlength="100" value="${esc(playerProfile.upi||"")}"></label><div class="sec"><h3 class="sh">My registrations</h3><div id="myHistory" class="meta">Loading history…</div></div>`:`<label>Email<input id="pEmail" type="email" autocomplete="email" required></label><label>Password<input id="pPass" type="password" minlength="6" autocomplete="new-password" required></label><p class="meta" style="margin:0">New players: Create account. Existing players: Sign in. Use at least 6 characters for a new password.</p>`}
+ <p class="err" id="pErr">${esc(message)}</p><div class="acts">${signed?`<button class="btn ghost" id="pLogout" type="button">Sign out</button><button class="btn" id="pSave" type="button">Save profile</button>`:`<button class="btn ghost" id="pCancel" type="button">Cancel</button><button class="btn ghost" id="pLogin" type="button">Sign in</button><button class="btn" id="pCreate" type="button">Create account</button>`}</div>`;
+ if(!signed){$("pCancel").onclick=()=>profileDlg.close();$("pLogin").onclick=()=>playerAuth(false);$("pCreate").onclick=()=>playerAuth(true);return;}
+ $("pSave").onclick=async()=>{const ign=$("pIgn").value.trim(),uid=$("pUid").value.trim(),phone=$("pPhone").value.trim().replace(/\s/g,""),upi=$("pUpi").value.trim();if(uid&&!/^\d{8,12}$/.test(uid))return $("pErr").textContent="Free Fire UID should be 8 to 12 digits.";if(phone&&!/^\+?\d{10,14}$/.test(phone))return $("pErr").textContent="Enter a valid WhatsApp number.";if(upi&&!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(upi))return $("pErr").textContent="Enter a valid UPI ID.";playerProfile={ign,uid,phone,upi,email:auth.currentUser.email};try{await setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true});$("pErr").textContent="Profile saved."}catch(e){$("pErr").textContent="Could not save profile. Firestore profile permissions may need updating."}};
+ $("pLogout").onclick=async()=>{await signOut(auth);profileDlg.close();};
+ showPlayerHistory();
+}
+async function showPlayerHistory(){const host=$("myHistory");if(!host||!auth.currentUser?.email)return;try{const q=query(collection(db,"registrations"),where("owner","==",auth.currentUser.uid));const snap=await getDocs(q);if(!snap.size){host.textContent="No registrations found for this account yet.";return;}host.innerHTML=snap.docs.map(d=>{const r=d.data(),t=T.find(x=>x.id===r.tid);return `<div class="nt" style="margin:8px 0"><b class="t">${esc(t?.name||"Tournament")}</b><p>${esc(r.ign||"")} · ${esc(r.uid||"")} · ${Number.isInteger(r.slot)?"Slot "+(r.slot+1):"Registered"}</p><p>Registration date: ${r.at?new Date(r.at).toLocaleString():"Unknown"}</p></div>`}).join("")}catch(e){host.textContent="Could not load history. Your Firestore rules may need to allow players to read their own registrations."}}
+async function playerAuth(create){const email=$("pEmail").value.trim().toLowerCase(),pass=$("pPass").value;if(!email||!pass)return $("pErr").textContent="Enter your email and password.";try{if(create){const credential=EmailAuthProvider.credential(email,pass);if(auth.currentUser?.isAnonymous){await linkWithCredential(auth.currentUser,credential)}else{await createUserWithEmailAndPassword(auth,email,pass)}}else{await signInWithEmailAndPassword(auth,email,pass)}await loadPlayerProfile();profileScreen();}catch(e){const messages={"auth/email-already-in-use":"This email already has an account. Tap Sign in instead.","auth/weak-password":"Use a stronger password with at least 6 characters.","auth/invalid-credential":"Email or password is incorrect.","auth/credential-already-in-use":"This email is already linked to another account. Sign in instead."};$("pErr").textContent=messages[e.code]||"Could not complete account action: "+(e.code||"please try again");}}
+$("profileBtn").onclick=async()=>{await loadPlayerProfile();profileScreen();profileDlg.showModal()};
 onAuthStateChanged(auth,u=>{
  if(!u){signInAnonymously(auth).catch(()=>{});return}
  if(watchUid!==u.uid){watchUid=u.uid;resetWatch()}
+ loadPlayerProfile();
  setAdmin(!!u.email&&u.email.toLowerCase()===ADMIN_EMAIL.toLowerCase());
  syncWatch();
 });
