@@ -150,6 +150,22 @@ dialog{box-shadow:0 24px 80px rgba(0,0,0,.45)}
   .btn,.mode,.bell,.tabs button,.tile,.bottom-tab{transition:none}
 }
 
+
+/* Small, independent join-help control */
+.join-help-wrap{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:42px}
+.join-help{width:30px;height:30px;min-width:30px;padding:0;border:2px solid var(--flame);border-radius:50%;background:var(--panel2);color:var(--flame);font:700 15px/1 system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.join-help:hover{background:var(--flame);color:#fff}
+.join-help-label{font-size:10px;line-height:1.1;color:var(--mute);white-space:nowrap}
+.join-actions{display:flex;align-items:center;gap:8px}
+#joinHelpDlg .dlg{max-width:520px}
+#joinHelpDlg h3{margin:0 0 12px}
+#joinHelpDlg .help-mode{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--panel2)}
+#joinHelpDlg .help-mode h4{margin:0 0 6px;font-size:16px}
+#joinHelpDlg .help-mode p{margin:0;color:var(--mute);line-height:1.5}
+#joinHelpDlg .help-steps{margin:8px 0 0;padding-left:22px;display:grid;gap:9px;line-height:1.5}
+#joinHelpDlg .help-steps li{padding-left:2px}
+#joinHelpDlg .help-steps b{color:var(--ink)}
+
 </style>
 </head>
 <body>
@@ -253,6 +269,7 @@ dialog{box-shadow:0 24px 80px rgba(0,0,0,.45)}
 <dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
 <dialog id="ndlg"><div class="dlg" id="nbody"></div></dialog>
 <dialog id="dlg"><div class="dlg" id="dbody"></div></dialog>
+<dialog id="joinHelpDlg"><div class="dlg" id="joinHelpBody"></div></dialog>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -297,7 +314,7 @@ function card(t){
    <div class="slots" role="img" aria-label="${n} of ${total} seats taken">${b}</div>
    ${my.length?`<div class="meta">You’re in: ${my.map(x=>slotName(t,x)).join(", ")}</div>`:""}
    <div class="row"><span class="left">${left>0?left+" seat"+(left>1?"s":"")+" left":"Full"}</span>
-   <div class="acts"><button class="btn ghost" type="button" data-details="${t.id}">Details</button><button class="btn" data-id="${t.id}" ${left>0?"":"disabled"}>${left>0?"Join":"Full"}</button></div></div></article>`;
+   <div class="acts"><button class="btn ghost" type="button" data-details="${t.id}">Details</button><div class="join-actions"><span class="join-help-wrap"><button class="join-help" type="button" data-join-help="${t.mode}" aria-label="How to join ${esc(MODES[t.mode]||t.mode)}" title="How to join">?</button><span class="join-help-label">How to join</span></span><button class="btn" data-id="${t.id}" ${left>0?"":"disabled"}>${left>0?"Join":"Full"}</button></div></div></div></article>`;
 }
 function render(){
  $("tabs").innerHTML=[["all","All"],...GROUPS.map(g=>[g[0],g[1]])].map(([k,n])=>`<button data-m="${k}" aria-pressed="${k===cat}">${n}</button>`).join("");
@@ -312,6 +329,7 @@ function render(){
  $("list").innerHTML=parts||`<div class="empty">${db?"No tournaments right now. Check back soon.":"Live tournaments load when you open this page."}</div>`;
  $("list").querySelectorAll("button[data-details]").forEach(b=>b.onclick=()=>showTournamentDetails(b.dataset.details));
  $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
+ $("list").querySelectorAll("button[data-join-help]").forEach(b=>b.onclick=()=>showJoinHelp(b.dataset.joinHelp));
  const nx=upcoming()[0];
  $("nextJoin").hidden=!nx;$("nextJoin").style.display=nx?"":"none";
  if(nx){$("nextName").textContent=nx.name+" · "+MODES[nx.mode]+" · ₹"+nx.fee;$("nextJoin").onclick=()=>openJoin(nx.id)}
@@ -386,6 +404,37 @@ async function roomDialog(tid){
  $("n").onclick=async()=>{const id=$("r1").value.trim();if(!id)return $("e").textContent="Enter the room ID.";
   try{await setDoc(doc(db,"rooms",tid),{id,pass:$("r2").value.trim(),at:Date.now()});close()}catch(x){$("e").textContent="Could not save. Try again."}};
  if(!dlg.open)dlg.showModal();
+}
+function showJoinHelp(mode){
+ const isSolo=mode==="solo",isDuo=mode==="duo",isSquad=mode==="squad";
+ const title=isSolo?"Solo":isDuo?"Duo":isSquad?"Squad (4)":(MODES[mode]||mode);
+ const steps=isSolo?[
+  "Tap <b>Join</b> on the Solo tournament you want to enter.",
+  "Choose an available Solo slot.",
+  "Enter your <b>UID</b>, <b>In-Game Name</b> and <b>Contact number</b>.",
+  "Tap <b>Continue to payment</b>. The next screen shows the entry amount.",
+  "Tap <b>Open UPI app</b> and pay the displayed entry fee.",
+  "Return to this page and enter the <b>UPI ID you paid from</b>.",
+  "Tap <b>Submit for verification</b>. Your registration code/reference ID will appear—save it."
+ ]:isDuo?[
+  "Tap <b>Join</b> on the Duo tournament.",
+  "Choose the Duo team slot you and your teammate want to join. A Duo slot has <b>2 player seats</b>.",
+  "Player 1 enters their own <b>UID</b>, <b>In-Game Name</b> and <b>Contact number</b>, then taps <b>Continue to payment</b>.",
+  "Player 1 pays the displayed entry fee using <b>Open UPI app</b>, returns to the page, enters the UPI ID they paid from and taps <b>Submit for verification</b>. Save the reference ID shown.",
+  "Player 2 repeats the same Join process, but must choose the <b>same Duo team slot</b> while its second seat is still open. Player 2 enters their own details, pays their own displayed entry fee, enters their own payer UPI ID and submits.",
+  "When both player seats are filled, the Duo team is complete. Each player has their own registration and reference ID."
+ ]:[
+  "Tap <b>Join</b> on the Squad tournament.",
+  "Choose the Squad team slot you and your teammates want to join. A Squad slot has <b>4 player seats</b>.",
+  "Player 1 enters their own <b>UID</b>, <b>In-Game Name</b> and <b>Contact number</b>, then taps <b>Continue to payment</b>.",
+  "Player 1 pays the displayed entry fee using <b>Open UPI app</b>, returns to the page, enters the UPI ID they paid from and taps <b>Submit for verification</b>. Save the reference ID shown.",
+  "Players 2, 3 and 4 each repeat the same process, choosing the <b>same Squad team slot</b> while seats are available. Each player enters their own details, pays their own displayed entry fee, enters their own payer UPI ID and submits.",
+  "When all 4 player seats are filled, the Squad team is complete. Each player has their own registration and reference ID."
+ ];
+ const d=$("joinHelpDlg"),b=$("joinHelpBody");
+ b.innerHTML='<h3>How to join · '+esc(title)+'</h3><div class="help-mode"><h4>'+(isSolo?'Solo · 1 player':isDuo?'Duo · 2 players in one team':'Squad · 4 players in one team')+'</h4><ol class="help-steps">'+steps.map(x=>'<li>'+x+'</li>').join('')+'</ol></div><p class="meta">Important: Your registration stays <b>Pending</b> until an admin verifies the payment. The room details become available only after verification. For Duo and Squad, every teammate must complete their own registration and payment in the same team slot.</p><div class="acts"><button class="btn" type="button" id="closeJoinHelp">Got it</button></div>';
+ $("closeJoinHelp").onclick=()=>d.close();
+ if(!d.open)d.showModal();
 }
 function openJoin(id){
  const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots*seatsOf(t))return;
