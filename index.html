@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#150c28"><link rel="icon" href="icon-192.png"><title>TF Tournaments – Free Fire Paid Scrims</title>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#17090c"><link rel="icon" href="icon-192.png"><title>TF Tournaments – Free Fire Paid Scrims</title>
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f6f1ff;--panel:#fff;--panel2:#ece4fb;--ink:#1d1233;--mute:#5d5278;--flame:#e8500e;--gold:#b87900;--line:#d8cdf0;--onflame:#fff;--ok:#1a8a4a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150c28;--panel:#21143a;--panel2:#2c1c4d;--ink:#f6f0ff;--mute:#b5a8d4;--flame:#ff6b2c;--gold:#ffc93c;--line:#3b2a63;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#150c28;--panel:#21143a;--panel2:#2c1c4d;--ink:#f6f0ff;--mute:#b5a8d4;--flame:#ff6b2c;--gold:#ffc93c;--line:#3b2a63;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}
+:root{--bg:#fff5f5;--panel:#fff;--panel2:#ffe5e5;--ink:#291012;--mute:#79585b;--flame:#dc1830;--gold:#b78325;--line:#efc6cb;--onflame:#fff;--ok:#16834a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17090c;--panel:#241014;--panel2:#35151c;--ink:#fff1f2;--mute:#c7a6aa;--flame:#ff2945;--gold:#ffc45c;--line:#59232d;--onflame:#fff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17090c;--panel:#241014;--panel2:#35151c;--ink:#fff1f2;--mute:#c7a6aa;--flame:#ff2945;--gold:#ffc45c;--line:#59232d;--onflame:#fff;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
 *,*::before,*::after{box-sizing:inherit}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.55 Barlow,system-ui,sans-serif}
@@ -75,7 +75,7 @@ textarea{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px;bor
 .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 .mode{margin-left:12px;font:600 14px Barlow,sans-serif;padding:7px 14px;border-radius:99px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.mode[aria-pressed=true]{background:var(--flame);border-color:var(--flame);color:var(--onflame)}
 .support{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.support a{display:block;text-align:center;border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:16px;text-decoration:none;font-weight:600}.support a:hover{border-color:var(--flame)}.support a small{display:block;color:var(--mute);font-weight:500;margin-top:2px}
-:root[data-theme="black"]{--bg:#000;--panel:#0a0a0a;--panel2:#161616;--ink:#f6f0ff;--mute:#a79bc4;--flame:#ff6b2c;--gold:#ffc93c;--line:#2a2a2a;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}
+:root[data-theme="black"]{--bg:#050303;--panel:#10090b;--panel2:#1d0d11;--ink:#fff1f2;--mute:#b99da1;--flame:#ff2945;--gold:#ffc45c;--line:#382027;--onflame:#fff;color-scheme:dark}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:44vh;overflow:auto;padding:2px}
 .tile{border:2px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;padding:8px 2px;cursor:pointer;font:600 15px Barlow,sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px}
 .tile b{font:400 20px "Russo One",sans-serif}.tile span{font-size:11px;color:var(--mute);font-weight:500}
@@ -89,11 +89,21 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 @media (max-width:760px){.hero{grid-template-columns:1fr}nav{display:none}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
+
+/* Subtle Free Fire-inspired red watermark texture */
+body{
+  background-image:
+    radial-gradient(ellipse at 85% 0%,rgba(255,41,69,.13),transparent 36%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='420' viewBox='0 0 520 420'%3E%3Cg fill='none' stroke='%23ff5268' stroke-opacity='.105' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(28 58) rotate(-18 90 48)'%3E%3Cpath d='M18 43h106l18 9h35v15h-42l-14-8H82l-8 28H53l4-29H18z'/%3E%3Cpath d='M38 42V29h75v14M130 53v-9h23v9M89 67l-2 23M24 42V33h-9v10'/%3E%3C/g%3E%3Cg transform='translate(340 42)'%3E%3Cpath d='M34 10c-17 0-27 13-27 31v49c0 19 10 31 27 31s27-12 27-31V41C61 23 51 10 34 10z'/%3E%3Cpath d='M23 10V1h22v9M23 31h22M24 48h20M25 68h18M25 88h18M58 20l15-9 8 12-17 12'/%3E%3C/g%3E%3Ctext x='250' y='250' fill='%23ff5268' fill-opacity='.07' stroke='none' font-family='Arial,sans-serif' font-size='30' font-weight='900' letter-spacing='3' transform='rotate(-18 250 250)'%3EFREE FIRE%3C/text%3E%3Cg transform='translate(105 285) rotate(16 90 35)'%3E%3Cpath d='M10 25h145l17 9h28v12h-31l-17-8H83l-7 24H58l3-25H10zM36 24V13h75v11'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+    var(--bg);
+  background-repeat: no-repeat, repeat, no-repeat;
+  background-size: auto, 520px 420px, auto;
+  background-attachment: fixed;
+}
+
 /* TF Tournaments refreshed mobile-first interface */
 :root{scroll-padding-bottom:110px}
-body{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));background:
-  radial-gradient(ellipse at 85% 0%,rgba(255,107,44,.10),transparent 34%),
-  var(--bg)}
+body{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));background-color:var(--bg)}
 header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid color-mix(in srgb,var(--line) 65%,transparent)}
 .logo{letter-spacing:.2px}
 .btn,.mode,.bell,.tabs button,.tile{transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}
@@ -642,7 +652,7 @@ $("shareApp").onclick=()=>doShare("Join paid Free Fire tournaments in Solo, Duo 
 function setBlack(on){
  if(on)document.documentElement.setAttribute("data-theme","black");else document.documentElement.removeAttribute("data-theme");
  $("bm").setAttribute("aria-pressed",String(on));$("bm").textContent=on?"Black mode: on":"Black mode";
- document.querySelector('meta[name="theme-color"]').content=on?"#000000":"#150c28";
+ document.querySelector('meta[name="theme-color"]').content=on?"#000000":"#17090c";
  try{localStorage.setItem("tf_black",on?"1":"0")}catch(e){}
 }
 $("bm").onclick=()=>setBlack($("bm").getAttribute("aria-pressed")!=="true");
