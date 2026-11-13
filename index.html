@@ -258,7 +258,7 @@ function renderAdmin(){
  $("at").querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomDialog(b.dataset.room));
  $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
  const tm=Object.fromEntries(T.map(t=>[t.id,t]));
- $("ar").innerHTML=`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>UPI transaction ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td>${esc(r.utr||"Not provided")}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="9">No registrations yet.</td></tr>`);`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
+ $("ar").innerHTML=`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
  $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{
   const r=R.find(y=>y.id===c.dataset.v);if(!r)return;
   const bt=writeBatch(db),vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
@@ -314,21 +314,9 @@ async function roomDialog(tid){
  if(!dlg.open)dlg.showModal();
 }
 function openJoin(id){
- const t=T.find(x=>x.id===id);
- if(!t||taken(id)>=t.slots*seatsOf(t))return;
-
- pick({
-  t,
-  slot:null,
-  v:{
-   ign:playerProfile.ign||"",
-   uid:playerProfile.uid||"",
-   phone:playerProfile.phone||""
-  }
- });
-
+ const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots*seatsOf(t))return;
+ pick({t,slot:null,v:{ign:playerProfile.ign||"",uid:playerProfile.uid||"",phone:playerProfile.phone||""},payerUpi:playerProfile.upi||""});
  if(!dlg.open)dlg.showModal();
-};
 }
 function slotInfo(c){
  if(c.slot==null)return isBR(c.t)?"Tap a slot to choose it.":"Tap a team to choose it.";
@@ -342,14 +330,14 @@ function pick(c){
   tiles+=`<button type="button" class="tile ${free<=0?"full":k?"part":""} ${c.slot===i?"sel":""}" data-s="${i}" ${free<=0?"disabled":""}><b>${slotTag(t,i)}</b><span>${per===1?(free?"open":"taken"):free+"/"+per+" free"}</span></button>`}
  body.innerHTML=`<h3>Pick your ${isBR(t)?"slot":"team"}</h3><div class="meta">${esc(t.name)} · ${MODES[t.mode]} · Entry ₹${t.fee}${isBR(t)?(per>1?"<br>Take an empty slot, or join an open seat in another team.":""):(per>1?"<br>Choose a team. Friends can join the same team.":"<br>Choose your side.")}</div>
  <div class="tiles">${tiles}</div><div class="meta" id="si">${slotInfo(c)}</div><p class="err" id="e">${esc(c.msg||"")}</p>
- <<div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>Continue</button></div>`;
+ <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>${c.payerUpi?"Confirm this slot":"Continue"}</button></div>`;
  body.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
   c.slot=+b.dataset.s;c.msg="";
   body.querySelectorAll(".tile").forEach(x=>x.classList.toggle("sel",x===b));
   $("si").innerHTML=slotInfo(c);$("e").textContent="";$("n").disabled=false;
  });
  $("c").onclick=close;
- $("n").onclick=()=>details(c);
+ $("n").onclick=()=>{if(c.v&&c.payerUpi)submit(c);else details(c)};
 }
 function details(c){
  const t=c.t,v=c.v||{};
@@ -368,102 +356,35 @@ function details(c){
   c.v=v;pay(c);
  };
 }
-const PAYEE={upi:"manikg102n@oksbi",name:"TF TOURNAMENTS"};
-
+const PAYEE={upi:"7889354015@ptsbi",name:"TF TOURNAMENTS"};
 function pay(c){
  const t=c.t;
-
- const upiLink=`upi://pay?pa=${PAYEE.upi}&pn=${encodeURIComponent(PAYEE.name)}&am=${encodeURIComponent(Number(t.fee).toFixed(2))}&cu=INR&tn=${encodeURIComponent(t.name+" entry")}`;
-
+ const upiLink=`upi://pay?pa=${PAYEE.upi}&pn=${encodeURIComponent(PAYEE.name)}&am=${t.fee}&cu=INR&tn=${encodeURIComponent(t.name+" entry")}`;
  c.paymentOpened=false;
-
- body.innerHTML=`
- <h3>Pay ₹${t.fee}</h3>
-
- <div class="pay">
-  Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b>.
-  Tap the payment button to open your installed UPI app.
-  Complete the payment and return here.
- </div>
-
- <label>Your UPI ID
-  <input id="payerupi" maxlength="100"
-   autocomplete="off"
-   placeholder="example@upi"
-   inputmode="email"
-   value="${esc(playerProfile.upi||"")}">
- </label>
-
- <label>UPI transaction ID / UTR
-  <input id="utr" maxlength="30"
-   autocomplete="off"
-   inputmode="numeric"
-   placeholder="Enter your 12-digit UTR">
- </label>
-
- <p class="meta" style="margin:0">
-  Your registration will remain Pending until the admin verifies your payment.
-  A saved UPI ID does not confirm payment.
- </p>
-
+ body.innerHTML=`<h3>Pay ₹${t.fee}</h3>
+ <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using any UPI app. After paying, return here and enter the UPI ID you paid from.</div>
+ <label>Your UPI ID<input id="payerupi" maxlength="100" autocomplete="off" placeholder="example@upi" inputmode="email" value="${esc(playerProfile.upi||"")}"></label>
+ <p class="meta" style="margin:0">Tap <b>Join Slot · ₹${t.fee}</b> once to open your UPI app. After payment, return, enter your UPI ID and tap the same button again to register.</p>
  <p class="err" id="e"></p>
-
- <div class="acts" style="justify-content:flex-start">
-  <button class="btn ghost" id="cp" type="button">
-   Copy payment UPI ID
-  </button>
- </div>
-
- <div class="acts">
-  <button class="btn ghost" id="b">Back</button>
-  <button class="btn ghost" id="openupi" type="button">
-   Pay ₹${t.fee} with UPI
-  </button>
-  <button class="btn" id="joinpay" type="button">
-   Submit registration
-  </button>
- </div>
- `;
-
+ <div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
+ <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="joinpay" type="button">Join Slot · ₹${t.fee}</button></div>`;
  $("b").onclick=()=>details(c);
-
- $("cp").onclick=()=>{
-  try{
-   navigator.clipboard.writeText(PAYEE.upi).then(()=>{
-    $("cp").textContent="Copied";
-   });
-  }catch(e){}
- };
-
- $("openupi").onclick=()=>{
-  c.paymentOpened=true;
-
-  $("e").textContent=
-   "Complete payment in your UPI app, return here and enter your UTR.";
-
-  window.location.href=upiLink;
- };
-
+ $("cp").onclick=()=>{try{navigator.clipboard.writeText(PAYEE.upi).then(()=>{$("cp").textContent="Copied"})}catch(e){}};
  $("joinpay").onclick=()=>{
   const x=$("payerupi").value.trim();
-  const utr=$("utr").value.trim();
-
-  if(!c.paymentOpened)
-   return $("e").textContent="First tap Pay with UPI.";
-
-  if(!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(x))
-   return $("e").textContent="Enter the UPI ID you paid from.";
-
-  if(!/^\d{12}$/.test(utr))
-   return $("e").textContent="Enter the 12-digit UPI transaction ID / UTR.";
-
+  if(!c.paymentOpened){
+   c.paymentOpened=true;
+   $("e").textContent="Opening your UPI app. Complete the payment, return here, enter your UPI ID and tap Join Slot again.";
+   window.location.href=upiLink;
+   return;
+  }
+  if(!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(x)){
+   $("e").textContent="Enter a valid UPI ID, for example name@upi.";
+   return;
+  }
   c.payerUpi=x;
-  c.utr=utr;
-
   submit(c);
  };
-}
-  
 }
 async function submit(c){
  const t=c.t,v=c.v,per=seatsOf(t);
@@ -474,20 +395,7 @@ async function submit(c){
  for(let seat=0;seat<per&&got==null;seat++){
   if(used.has(seat))continue;
   const rid=t.id+"_"+v.uid,jid=`${t.id}_s${c.slot}_p${seat}`,bt=writeBatch(db);
-  bt.set(doc(db,"registrations",rid),{
- owner:auth.currentUser.uid,
- tid:t.id,
- slot:c.slot,
- seat,
- jid,
- ign:v.ign,
- uid:v.uid,
- phone:v.phone,
- upi:c.payerUpi,
- utr:c.utr,
- paymentStatus:"pending",
- at:Date.now()
-});
+  bt.set(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,slot:c.slot,seat,jid,ign:v.ign,uid:v.uid,phone:v.phone,upi:c.payerUpi,at:Date.now()});
   bt.set(doc(db,"joins",jid),{tid:t.id,slot:c.slot,seat,ign:v.ign});
   try{await bt.commit();got=seat}catch(err){if(err.code!=="permission-denied")return pick(Object.assign(c,{msg:"Could not register. Check your connection and try again."}))}
  }
@@ -497,7 +405,7 @@ async function submit(c){
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
  syncWatch();
- body.innerHTML=`<h3>Registration submitted, ${esc(v.ign)}</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held as <b>Pending payment verification</b>. The admin will verify your payment before confirming your entry and room access.</p>
+ body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
  <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn" id="o">Done</button></div>`;
  $("o").onclick=close;render();
 }
