@@ -256,13 +256,17 @@ function openJoin(id){
  };
  if(!dlg.open)dlg.showModal();
 }
+const PAYEE={upi:"7889354015@ptsbi",name:"TF TOURNAMENTS"};
 function pay(t,v){
+ const upiLink=`upi://pay?pa=${PAYEE.upi}&pn=${encodeURIComponent(PAYEE.name)}&am=${t.fee}&cu=INR&tn=${encodeURIComponent(t.name+" entry")}`;
  body.innerHTML=`<h3>Pay ₹${t.fee}</h3>
- <div class="pay">Send <b>₹${t.fee}</b> by UPI to <b>7889354015@ptsbi</b> and keep the transaction ID.</div>
+ <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using any UPI app, then enter the transaction ID below.</div>
+ <div class="acts" style="justify-content:flex-start"><a class="btn" id="upi" href="${esc(upiLink)}">Pay ₹${t.fee} with UPI</a><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
  <label>UPI transaction ID<input id="tx" maxlength="24" autocomplete="off"></label>
  <p class="err" id="e"></p>
  <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="d">Confirm slot</button></div>`;
  $("b").onclick=()=>openJoin(t.id);
+ $("cp").onclick=()=>{try{navigator.clipboard.writeText(PAYEE.upi).then(()=>{$("cp").textContent="Copied"})}catch(e){}};
  $("d").onclick=async()=>{
   const x=$("tx").value.trim();
   if(x.length<8)return $("e").textContent="Enter the transaction ID from your UPI app (at least 8 characters).";
