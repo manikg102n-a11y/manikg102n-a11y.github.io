@@ -10,7 +10,7 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150c28;--panel:#21143a;--panel2:#2c1c4d;--ink:#f6f0ff;--mute:#b5a8d4;--flame:#ff6b2c;--gold:#ffc93c;--line:#3b2a63;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#150c28;--panel:#21143a;--panel2:#2c1c4d;--ink:#f6f0ff;--mute:#b5a8d4;--flame:#ff6b2c;--gold:#ffc93c;--line:#3b2a63;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
-*,*::before,*::after{box-sizing:inherit}
+*,*::before,*::after{box-sizing:inherit}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.55 Barlow,system-ui,sans-serif}
 h1,h2,h3,.logo{font-family:"Russo One",Impact,sans-serif;font-weight:400;line-height:1.05;margin:0}
 a{color:inherit}
@@ -71,6 +71,9 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
 .pay b{font-size:18px;color:var(--gold)}
 .code{font:400 28px "Russo One",sans-serif;text-align:center;color:var(--gold);letter-spacing:.06em;background:var(--panel2);border-radius:10px;padding:14px}
 .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.mode{margin-left:12px;font:600 14px Barlow,sans-serif;padding:7px 14px;border-radius:99px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.mode[aria-pressed=true]{background:var(--flame);border-color:var(--flame);color:var(--onflame)}
+.support{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.support a{display:block;text-align:center;border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:16px;text-decoration:none;font-weight:600}.support a:hover{border-color:var(--flame)}.support a small{display:block;color:var(--mute);font-weight:500;margin-top:2px}
+:root[data-theme="black"]{--bg:#000;--panel:#0a0a0a;--panel2:#161616;--ink:#f6f0ff;--mute:#a79bc4;--flame:#ff6b2c;--gold:#ffc93c;--line:#2a2a2a;--onflame:#1a0b05;--ok:#4be08a;color-scheme:dark}
 @media (max-width:760px){.hero{grid-template-columns:1fr}nav{display:none}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -79,7 +82,8 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
 <div class="wrap">
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
-  <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
+  <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
+  <button class="mode" id="bm" aria-pressed="false">Black mode</button>
 </header>
 <main id="top">
 <div class="hero">
@@ -148,6 +152,11 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
   <details><summary>What is the difference between the modes?</summary><p>Solo is one player per slot, Duo is a pair, and Squad is a team of 4.</p></details>
   <details><summary>Do I need to be a certain level?</summary><p>You need Free Fire level 40 or higher, and the UID you register must be the one you play with.</p></details>
 </section>
+<section id="support">
+  <h2>Customer support</h2>
+  <p class="sub">Payment not showing, room ID missing or any other problem? Reach us here and we will reply as soon as we can.</p>
+  <div class="support" id="sup"></div>
+</section>
 </main>
 <footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
 </div>
@@ -158,7 +167,8 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,signInAnonymously,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {firebaseConfig,ADMIN_EMAIL} from "./firebase-config.js";
+import * as CFG from "./firebase-config.js";
+const {firebaseConfig,ADMIN_EMAIL}=CFG, CONTACT=CFG.CONTACT||{};
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 const app=initializeApp(firebaseConfig),auth=getAuth(app),fdb=getFirestore(app);
 
@@ -188,7 +198,7 @@ function render(){
    <button class="btn" data-id="${t.id}" ${left>0&&!mine[t.id]?"":"disabled"}>${mine[t.id]?"Registered":left>0?"Join":"Full"}</button></div></article>`}).join("");
  $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
  const nx=upcoming()[0];
- $("nextJoin").hidden=!nx;
+ $("nextJoin").hidden=!nx;$("nextJoin").style.display=nx?"":"none";
  if(nx){$("nextName").textContent=nx.name+" · "+MODES[nx.mode]+" · ₹"+nx.fee;$("nextJoin").onclick=()=>openJoin(nx.id)}
  else $("nextName").textContent="Nothing scheduled yet";
  if(isAdmin)renderAdmin();
@@ -298,6 +308,23 @@ $("ls").onclick=async()=>{
 };
 $("navOut").onclick=async e=>{e.preventDefault();await signOut(auth);location.hash="top"};
 
+// Support buttons
+(function(){
+ const c=CONTACT,L=[];
+ if(c.email)L.push(["mailto:"+c.email,"Email us",c.email]);
+ if(c.whatsapp)L.push([c.whatsapp,"WhatsApp channel","Updates and room IDs"]);
+ if(c.instagram){const h=c.instagram.trim();L.push([/^https?:/.test(h)?h:"https://instagram.com/"+h.replace(/^@/,""),"Instagram",/^https?:/.test(h)?"Follow us":"@"+h.replace(/^@/,"")])}
+ $("sup").innerHTML=L.length?L.map(x=>`<a href="${esc(x[0])}" target="_blank" rel="noopener">${x[1]}<small>${esc(x[2])}</small></a>`).join(""):'<p class="meta">Support details coming soon.</p>';
+})();
+// Black (AMOLED) mode
+function setBlack(on){
+ if(on)document.documentElement.setAttribute("data-theme","black");else document.documentElement.removeAttribute("data-theme");
+ $("bm").setAttribute("aria-pressed",String(on));$("bm").textContent=on?"Black mode: on":"Black mode";
+ document.querySelector('meta[name="theme-color"]').content=on?"#000000":"#150c28";
+ try{localStorage.setItem("tf_black",on?"1":"0")}catch(e){}
+}
+$("bm").onclick=()=>setBlack($("bm").getAttribute("aria-pressed")!=="true");
+try{if(localStorage.getItem("tf_black")==="1")setBlack(true)}catch(e){}
 </script>
 </body>
 </html>
