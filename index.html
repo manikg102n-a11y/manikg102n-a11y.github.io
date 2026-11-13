@@ -290,22 +290,24 @@ function details(c){
   c.v=v;pay(c);
  };
 }
-const PAYEE={upi:"manikg102n@oksbi",name:"TF TOURNAMENTS"};
+const PAYEE={upi:"7889354015@ptsbi",name:"TF TOURNAMENTS"};
 function pay(c){
  const t=c.t;
  const upiLink=`upi://pay?pa=${PAYEE.upi}&pn=${encodeURIComponent(PAYEE.name)}&am=${t.fee}&cu=INR&tn=${encodeURIComponent(t.name+" entry")}`;
  body.innerHTML=`<h3>Pay ₹${t.fee}</h3>
- <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using any UPI app, then enter the transaction ID below.</div>
- <div class="acts" style="justify-content:flex-start"><a class="btn" id="upi" href="${esc(upiLink)}">Pay ₹${t.fee} with UPI</a><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
- <label>UPI transaction ID<input id="tx" maxlength="24" autocomplete="off"></label>
+ <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using any UPI app. After payment, return here and enter your UPI transaction ID.</div>
+ <label>UPI transaction ID<input id="tx" maxlength="24" autocomplete="off" placeholder="Enter after completing payment"></label>
+ <p class="meta" style="margin:0">Tap <b>Join Slot · ₹${t.fee}</b> to open your UPI app. After paying, come back, enter the transaction ID and tap the same button again.</p>
  <p class="err" id="e"></p>
- <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="d">Confirm slot</button></div>`;
+ <div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
+ <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="joinpay">Join Slot · ₹${t.fee}</button></div>`;
  $("b").onclick=()=>details(c);
  $("cp").onclick=()=>{try{navigator.clipboard.writeText(PAYEE.upi).then(()=>{$("cp").textContent="Copied"})}catch(e){}};
- $("d").onclick=()=>{
+ $("joinpay").onclick=()=>{
   const x=$("tx").value.trim();
-  if(x.length<8)return $("e").textContent="Enter the transaction ID from your UPI app (at least 8 characters).";
-  c.tx=x;submit(c);
+  if(x.length>=8){c.tx=x;submit(c);return}
+  $("e").textContent="Complete the UPI payment first. Then enter its transaction ID and tap Join Slot again.";
+  window.location.href=upiLink;
  };
 }
 async function submit(c){
