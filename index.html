@@ -474,7 +474,20 @@ async function submit(c){
  for(let seat=0;seat<per&&got==null;seat++){
   if(used.has(seat))continue;
   const rid=t.id+"_"+v.uid,jid=`${t.id}_s${c.slot}_p${seat}`,bt=writeBatch(db);
-  bt.set(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,slot:c.slot,seat,jid,ign:v.ign,uid:v.uid,phone:v.phone,upi:c.payerUpi,at:Date.now()});
+  bt.set(doc(db,"registrations",rid),{
+ owner:auth.currentUser.uid,
+ tid:t.id,
+ slot:c.slot,
+ seat,
+ jid,
+ ign:v.ign,
+ uid:v.uid,
+ phone:v.phone,
+ upi:c.payerUpi,
+ utr:c.utr,
+ paymentStatus:"pending",
+ at:Date.now()
+});
   bt.set(doc(db,"joins",jid),{tid:t.id,slot:c.slot,seat,ign:v.ign});
   try{await bt.commit();got=seat}catch(err){if(err.code!=="permission-denied")return pick(Object.assign(c,{msg:"Could not register. Check your connection and try again."}))}
  }
@@ -484,7 +497,7 @@ async function submit(c){
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
  syncWatch();
- body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
+ body.innerHTML=`<h3>Registration submitted, ${esc(v.ign)}</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held as <b>Pending payment verification</b>. The admin will verify your payment before confirming your entry and room access.</p>
  <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn" id="o">Done</button></div>`;
  $("o").onclick=close;render();
 }
