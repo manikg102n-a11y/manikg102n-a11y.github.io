@@ -66,6 +66,7 @@ dialog::backdrop{background:rgba(10,5,22,.72)}
 .dlg h3{font-size:24px}
 label{display:grid;gap:4px;font-size:14px;font-weight:600;color:var(--mute)}
 input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+textarea{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%;resize:vertical}
 .err{color:var(--flame);font-size:14px;min-height:1.2em;margin:0}
 .pay{background:var(--panel2);border-radius:10px;padding:14px;font-size:15px}
 .pay b{font-size:18px;color:var(--gold)}
@@ -79,6 +80,11 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
 .tile b{font:400 20px "Russo One",sans-serif}.tile span{font-size:11px;color:var(--mute);font-weight:500}
 .tile.part{border-color:var(--flame)}.tile.sel{border-color:var(--gold);background:var(--panel);box-shadow:0 0 0 2px var(--gold)}.tile.full{opacity:.35;cursor:not-allowed}
 .rl{margin:0;padding-left:18px;color:var(--mute);font-size:15px}.rl li{margin:6px 0}
+header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .mode{margin-left:0}
+.bell{position:relative;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0}
+.bell i{position:absolute;top:6px;right:7px;width:9px;height:9px;border-radius:50%;background:var(--flame);display:block}
+.toast{position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--flame);color:var(--onflame);padding:14px 16px;border-radius:12px;font-weight:600;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.nt{background:var(--panel2);border-radius:10px;padding:12px 14px}.nt b.t{display:block;font-size:16px}.nt p{margin:4px 0 0;font-size:15px;color:var(--mute)}.nt p b{color:var(--gold)}
 @media (max-width:760px){.hero{grid-template-columns:1fr}nav{display:none}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -88,7 +94,7 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
   <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
-  <button class="mode" id="bm" aria-pressed="false">Black mode</button>
+  <div class="hr"><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
 </header>
 <main id="top">
 <div class="hero">
@@ -168,12 +174,13 @@ input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px
 <footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
 </div>
 <dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
+<dialog id="ndlg"><div class="dlg" id="nbody"></div></dialog>
 <dialog id="dlg"><div class="dlg" id="dbody"></div></dialog>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,signInAnonymously,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,writeBatch,getDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import * as CFG from "./firebase-config.js";
 const {firebaseConfig,ADMIN_EMAIL}=CFG, CONTACT=CFG.CONTACT||{};
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
@@ -210,8 +217,8 @@ function render(){
    ${my.length&&my[0]>=0?`<div class="meta">Your slot: ${my.map(x=>x+1).join(", ")}</div>`:""}
    <div class="row"><span class="left">${left>0?left+" seat"+(left>1?"s":"")+" left":"Full"}</span>
    <div class="acts"><button class="btn ghost" type="button" data-details="${t.id}">Details</button><button class="btn" data-id="${t.id}" ${left>0?"":"disabled"}>${left>0?"Join":"Full"}</button></div></div></article>`}).join("");
- $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
  $("list").querySelectorAll("button[data-details]").forEach(b=>b.onclick=()=>showTournamentDetails(b.dataset.details));
+ $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
  const nx=upcoming()[0];
  $("nextJoin").hidden=!nx;$("nextJoin").style.display=nx?"":"none";
  if(nx){$("nextName").textContent=nx.name+" · "+MODES[nx.mode]+" · ₹"+nx.fee;$("nextJoin").onclick=()=>openJoin(nx.id)}
@@ -228,12 +235,19 @@ setInterval(tick,1000);
 
 function renderAdmin(){
  const all=[...T].sort((a,b)=>a.start-b.start);
- $("at").innerHTML=`<tr><th>Name</th><th>Mode</th><th>Fee</th><th>Starts</th><th>Seats</th><th></th></tr>`+(all.map(t=>`<tr><td>${esc(t.name)}</td><td>${MODES[t.mode]}</td><td>₹${t.fee}</td><td>${fmt(t.start)}</td><td>${taken(t.id)}/${t.slots*seatsOf(t)}</td><td><button class="btn ghost sm" data-del="${t.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="6">No tournaments yet.</td></tr>`);
+ $("at").innerHTML=`<tr><th>Name</th><th>Mode</th><th>Fee</th><th>Starts</th><th>Seats</th><th></th></tr>`+(all.map(t=>`<tr><td>${esc(t.name)}</td><td>${MODES[t.mode]}</td><td>₹${t.fee}</td><td>${fmt(t.start)}</td><td>${taken(t.id)}/${t.slots*seatsOf(t)}</td><td><button class="btn ghost sm" data-room="${t.id}">Room</button> <button class="btn ghost sm" data-del="${t.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="6">No tournaments yet.</td></tr>`);
+ $("at").querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomDialog(b.dataset.room));
  $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
  const tm=Object.fromEntries(T.map(t=>[t.id,t]));
  $("ar").innerHTML=`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
- $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{const d=doc(db,"verified",c.dataset.v);(c.checked?setDoc(d,{ok:true}):deleteDoc(d)).catch(()=>{})});
- $("ar").querySelectorAll("[data-rm]").forEach(x=>x.onclick=()=>{const r=R.find(y=>y.id===x.dataset.rm);if(!r||!confirm("Remove this player and free their seat?"))return;const bt=writeBatch(db);bt.delete(doc(db,"registrations",r.id));if(r.jid)bt.delete(doc(db,"joins",r.jid));bt.delete(doc(db,"verified",r.id));bt.commit().catch(()=>{})});
+ $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{
+  const r=R.find(y=>y.id===c.dataset.v);if(!r)return;
+  const bt=writeBatch(db),vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
+  if(c.checked){bt.set(vd,{ok:true});bt.set(ad,{ok:true,tid:r.tid})}
+  else{bt.delete(vd);if(!R.some(y=>y.id!==r.id&&y.owner===r.owner&&y.tid===r.tid&&V.has(y.id)))bt.delete(ad)}
+  bt.commit().catch(()=>{c.checked=!c.checked});
+ });
+ $("ar").querySelectorAll("[data-rm]").forEach(x=>x.onclick=()=>{const r=R.find(y=>y.id===x.dataset.rm);if(!r||!confirm("Remove this player and free their seat?"))return;const bt=writeBatch(db);bt.delete(doc(db,"registrations",r.id));if(r.jid)bt.delete(doc(db,"joins",r.jid));bt.delete(doc(db,"verified",r.id));if(!R.some(y=>y.id!==r.id&&y.owner===r.owner&&y.tid===r.tid&&V.has(y.id)))bt.delete(doc(db,"access",r.owner+"_"+r.tid));bt.commit().catch(()=>{})});
 }
 $("aadd").onclick=async()=>{
  const g=i=>$("a"+i).value.trim(),e=$("ae");e.textContent="";
@@ -261,6 +275,18 @@ function showTournamentDetails(id){
  $("dj").onclick=()=>{close();openJoin(t.id)};
  if(!dlg.open)dlg.showModal();
 }
+async function roomDialog(tid){
+ const t=T.find(x=>x.id===tid);let r={};
+ try{const sn=await getDoc(doc(db,"rooms",tid));if(sn.exists())r=sn.data()}catch(e){}
+ body.innerHTML=`<h3>Room details</h3><div class="meta">${esc(t?t.name:"")}. Players marked Paid see this 10 minutes before the match starts.</div>
+ <label>Room ID<input id="r1" maxlength="30" autocomplete="off" value="${esc(r.id||"")}"></label>
+ <label>Password<input id="r2" maxlength="30" autocomplete="off" value="${esc(r.pass||"")}"></label>
+ <p class="err" id="e"></p><div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n">Save</button></div>`;
+ $("c").onclick=close;
+ $("n").onclick=async()=>{const id=$("r1").value.trim();if(!id)return $("e").textContent="Enter the room ID.";
+  try{await setDoc(doc(db,"rooms",tid),{id,pass:$("r2").value.trim(),at:Date.now()});close()}catch(x){$("e").textContent="Could not save. Try again."}};
+ if(!dlg.open)dlg.showModal();
+}
 function openJoin(id){
  const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots*seatsOf(t))return;
  pick({t,slot:null});
@@ -278,14 +304,14 @@ function pick(c){
   tiles+=`<button type="button" class="tile ${free<=0?"full":k?"part":""} ${c.slot===i?"sel":""}" data-s="${i}" ${free<=0?"disabled":""}><b>${i+1}</b><span>${per===1?(free?"open":"taken"):free+"/"+per+" free"}</span></button>`}
  body.innerHTML=`<h3>Pick your slot</h3><div class="meta">${esc(t.name)} · ${MODES[t.mode]} · Entry ₹${t.fee}${per>1?"<br>Take an empty slot, or join an open seat in another team.":""}</div>
  <div class="tiles">${tiles}</div><div class="meta" id="si">${slotInfo(c)}</div><p class="err" id="e">${esc(c.msg||"")}</p>
- <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>${c.tx?"Confirm this slot":"Continue"}</button></div>`;
+ <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>${c.payerUpi?"Confirm this slot":"Continue"}</button></div>`;
  body.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
   c.slot=+b.dataset.s;c.msg="";
   body.querySelectorAll(".tile").forEach(x=>x.classList.toggle("sel",x===b));
   $("si").innerHTML=slotInfo(c);$("e").textContent="";$("n").disabled=false;
  });
  $("c").onclick=close;
- $("n").onclick=()=>{if(c.v&&c.tx)submit(c);else details(c)};
+ $("n").onclick=()=>{if(c.v&&c.payerUpi)submit(c);else details(c)};
 }
 function details(c){
  const t=c.t,v=c.v||{};
@@ -351,6 +377,7 @@ async function submit(c){
  const code="TF-"+Math.random().toString(36).slice(2,6).toUpperCase();
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
+ syncWatch();
  body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">Slot ${c.slot+1}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
  <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn" id="o">Done</button></div>`;
  $("o").onclick=close;render();
@@ -358,7 +385,7 @@ async function submit(c){
 dlg.addEventListener("click",e=>{if(e.target===dlg)close()});
 
 render();tick();
-onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{});
+onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));render();syncWatch()},()=>{});
 onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{});
 function setAdmin(on){
  isAdmin=on;$("admin").hidden=!on;$("navAdmin").hidden=!on;$("navOut").hidden=!on;$("alogin").hidden=on;
@@ -371,7 +398,9 @@ function setAdmin(on){
 }
 onAuthStateChanged(auth,u=>{
  if(!u){signInAnonymously(auth).catch(()=>{});return}
+ if(watchUid!==u.uid){watchUid=u.uid;resetWatch()}
  setAdmin(!!u.email&&u.email.toLowerCase()===ADMIN_EMAIL.toLowerCase());
+ syncWatch();
 });
 const ld=$("ldlg");
 $("alogin").onclick=e=>{e.preventDefault();$("lerr").textContent="";ld.showModal()};
@@ -383,6 +412,82 @@ $("ls").onclick=async()=>{
  catch(e){$("lerr").textContent="Wrong email or password."}
 };
 $("navOut").onclick=async e=>{e.preventDefault();await signOut(auth);location.hash="top"};
+
+// Notifications for paid players
+const ACC=new Set(),ROOM={},watching={},timers={},roomUn={},retries={};
+let watchUid=null;
+const seenMap=()=>{try{return JSON.parse(localStorage.getItem("tf_seen")||"{}")}catch(e){return{}}};
+function sysNotify(title,text,tag){
+ try{if("Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body:text,icon:"icon-192.png",badge:"icon-192.png",tag,vibrate:[200,100,200]}))}catch(e){}
+}
+function toast(msg){const d=document.createElement("div");d.className="toast";d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),9000)}
+function note(key,title,msg){
+ const s=seenMap();if(s[key])return;s[key]=1;try{localStorage.setItem("tf_seen",JSON.stringify(s))}catch(e){}
+ $("bdot").hidden=false;toast(title+": "+msg);sysNotify(title,msg,key);
+}
+function remind(tid){
+ const t=T.find(x=>x.id===tid);
+ if(t&&ACC.has(tid)&&t.start>Date.now()&&t.start-Date.now()<=600000)note("rem:"+tid,"Match starts soon",t.name+" starts in about 10 minutes. Get ready!");
+}
+function watchRoom(tid){
+ if(roomUn[tid])return;
+ roomUn[tid]=onSnapshot(doc(db,"rooms",tid),sn=>{
+  if(sn.exists()){ROOM[tid]=sn.data();const t=T.find(x=>x.id===tid);
+   note("room:"+tid+":"+ROOM[tid].id,"Room ready",(t?t.name+". ":"")+"Room ID "+ROOM[tid].id+(ROOM[tid].pass?", password "+ROOM[tid].pass:""))}
+  renderNotes();
+ },()=>{roomUn[tid]=null;retries[tid]=(retries[tid]||0)+1;if(retries[tid]<20)setTimeout(()=>watchRoom(tid),15000)});
+}
+function schedule(tid){
+ clearTimeout(timers[tid]);
+ const t=T.find(x=>x.id===tid);if(!t||!ACC.has(tid)||t.start<=Date.now())return;
+ const ms=t.start-600000-Date.now();
+ if(ms<=0){remind(tid);watchRoom(tid)}
+ else timers[tid]=setTimeout(()=>{remind(tid);watchRoom(tid)},ms+1000);
+}
+function resetWatch(){
+ Object.values(watching).forEach(u=>u&&u());Object.keys(watching).forEach(k=>delete watching[k]);
+ Object.values(roomUn).forEach(u=>u&&u());Object.keys(roomUn).forEach(k=>delete roomUn[k]);
+ Object.keys(ROOM).forEach(k=>delete ROOM[k]);ACC.clear();
+}
+function syncWatch(){
+ const u=auth.currentUser;if(!u||isAdmin)return;
+ Object.keys(mine).forEach(tid=>{
+  if(watching[tid]||!T.some(x=>x.id===tid)||!myList(tid).length)return;
+  watching[tid]=onSnapshot(doc(db,"access",u.uid+"_"+tid),sn=>{
+   if(sn.exists())ACC.add(tid);else ACC.delete(tid);
+   schedule(tid);renderNotes();
+  },()=>{});
+ });
+}
+function renderNotes(){
+ const el=$("nbody");if(!el||!$("ndlg").open)return;
+ const ids=Object.keys(mine).filter(tid=>T.some(x=>x.id===tid)&&myList(tid).length)
+  .sort((a,b)=>T.find(x=>x.id===a).start-T.find(x=>x.id===b).start);
+ const perm="Notification" in window?Notification.permission:"denied";
+ let h=`<h3>Notifications</h3>`;
+ if(perm==="default")h+=`<p class="meta" style="margin:0">Allow alerts so your phone can show the reminder.</p><div class="acts" style="justify-content:flex-start"><button class="btn sm" id="nperm">Turn on alerts</button></div>`;
+ else if(perm==="denied")h+=`<p class="meta" style="margin:0">Phone alerts are off. Turn them on in your phone’s app settings. Reminders still show here.</p>`;
+ if(!ids.length)h+=`<div class="empty">Join a tournament to see its updates here. Once your payment is confirmed, you get a reminder and the room ID 10 minutes before the match.</div>`;
+ else h+=ids.map(tid=>{
+  const t=T.find(x=>x.id===tid),sl=myList(tid).filter(x=>x.s>=0).map(x=>x.s+1).join(", "),now=Date.now(),inWin=t.start-600000<=now;
+  const at=new Date(t.start-600000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+  let st;
+  if(!ACC.has(tid))st="Waiting for payment confirmation. You will be notified once it is marked paid.";
+  else if(inWin&&ROOM[tid])st=`Payment confirmed. Room ID: <b>${esc(ROOM[tid].id)}</b>${ROOM[tid].pass?` · Password: <b>${esc(ROOM[tid].pass)}</b>`:""}`;
+  else if(t.start<=now)st="Payment confirmed. This match has started.";
+  else if(!inWin)st=`Payment confirmed. The room ID appears here at ${at}, 10 minutes before the match.`;
+  else st="Payment confirmed. The match starts soon. Waiting for the room details.";
+  return `<div class="nt"><b class="t">${esc(t.name)}${sl?" · Slot "+sl:""}</b><div class="meta">${fmt(t.start)}</div><p>${st}</p></div>`;
+ }).join("");
+ h+=`<div class="acts"><button class="btn" id="nc">Close</button></div>`;
+ el.innerHTML=h;
+ $("nc").onclick=()=>$("ndlg").close();
+ const pb=$("nperm");if(pb)pb.onclick=async()=>{try{await Notification.requestPermission()}catch(e){}renderNotes()};
+}
+$("bell").onclick=()=>{$("bdot").hidden=true;$("ndlg").showModal();renderNotes()};
+$("ndlg").addEventListener("click",e=>{if(e.target===$("ndlg"))$("ndlg").close()});
+setInterval(renderNotes,15000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)Object.keys(watching).forEach(schedule)});
 
 // Support buttons
 (function(){
