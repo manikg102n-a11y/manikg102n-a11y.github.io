@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.tftournaments.esports",
+        "sha256_cert_fingerprints": ["08:AE:5B:DB:14:A9:6C:26:03:DD:69:5C:D9:97:72:AC:CB:A1:9D:55:88:F4:4A:0F:B7:1E:F5:FA:CD:D8:35:50"]
+      }
+    }]
