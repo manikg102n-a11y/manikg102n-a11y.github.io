@@ -88,6 +88,58 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 .nt{background:var(--panel2);border-radius:10px;padding:12px 14px}.nt b.t{display:block;font-size:16px}.nt p{margin:4px 0 0;font-size:15px;color:var(--mute)}.nt p b{color:var(--gold)}
 @media (max-width:760px){.hero{grid-template-columns:1fr}nav{display:none}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* TF Tournaments refreshed mobile-first interface */
+:root{scroll-padding-bottom:110px}
+body{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));background:
+  radial-gradient(ellipse at 85% 0%,rgba(255,107,44,.10),transparent 34%),
+  var(--bg)}
+header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid color-mix(in srgb,var(--line) 65%,transparent)}
+.logo{letter-spacing:.2px}
+.btn,.mode,.bell,.tabs button,.tile{transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}
+.btn:active,.bottom-tab:active{transform:scale(.97)}
+.card,.next,details,.form{box-shadow:0 12px 32px rgba(0,0,0,.10)}
+.card{border-radius:18px}
+.next{border-radius:18px}
+section{scroll-margin-top:82px}
+.bottom-nav{
+  position:fixed;z-index:120;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);width:min(460px,calc(100% - 28px));
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;
+  border:1px solid color-mix(in srgb,var(--line) 85%,transparent);
+  border-radius:22px;background:color-mix(in srgb,var(--panel) 88%,transparent);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  box-shadow:0 14px 44px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.07)
+}
+.bottom-tab{
+  min-height:58px;border:0;border-radius:16px;background:transparent;color:var(--mute);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font:600 15px Barlow,system-ui,sans-serif;text-decoration:none;cursor:pointer
+}
+.bottom-tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bottom-tab.active{background:var(--flame);color:var(--onflame);box-shadow:0 6px 18px color-mix(in srgb,var(--flame) 32%,transparent)}
+.bottom-tab span{letter-spacing:.1px}
+#profileBtn{display:none!important}
+dialog{box-shadow:0 24px 80px rgba(0,0,0,.45)}
+@media(min-width:761px){
+  body{padding-bottom:112px}
+  .bottom-nav{width:390px;bottom:20px}
+}
+@media(max-width:760px){
+  .wrap{padding-left:16px;padding-right:16px}
+  header{padding:12px 0}
+  .logo{font-size:20px}
+  .hero{padding:34px 0 38px;gap:22px}
+  .hero h1{font-size:clamp(36px,10vw,54px)}
+  .hero p{font-size:16px}
+  section{padding:32px 0}
+  .card{padding:16px}
+  .bottom-nav{width:min(460px,calc(100% - 24px))}
+}
+@media(prefers-reduced-motion:reduce){
+  .btn,.mode,.bell,.tabs button,.tile,.bottom-tab{transition:none}
+}
+
 </style>
 </head>
 <body>
@@ -95,7 +147,7 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
   <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
-  <div class="hr"><button class="btn ghost sm" id="profileBtn" type="button">Player profile</button><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
+  <div class="hr"><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
 </header>
 <main id="top">
 <div class="hero">
@@ -145,7 +197,7 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
   <div class="steps">
     <div><h3>Choose a tournament</h3><p>Pick Solo, Duo or Squad, and the entry fee and time that suit you.</p></div>
     <div><h3>Register</h3><p>Enter your in-game name and Free Fire UID (and your partner or teammates).</p></div>
-    <div><h3>Pay the entry fee</h3><p>Pay by UPI and add your transaction ID. Your slot is held until we verify it.</p></div>
+    <div><h3>Pay the entry fee</h3><p>Pay by UPI and enter the UPI ID you paid from. Your registration stays pending until an admin verifies the payment.</p></div>
     <div><h3>Get the room ID</h3><p>Room ID and password go to you 15 minutes before start.</p></div>
   </div>
 </section>
@@ -175,6 +227,18 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 </main>
 <footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
 </div>
+
+<nav class="bottom-nav" aria-label="Main navigation">
+  <a class="bottom-tab active" id="bottomTournaments" href="#scrims" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Tournaments</span>
+  </a>
+  <button class="bottom-tab" id="bottomProfile" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+
 <dialog id="profileDlg"><div class="dlg" id="profileBody"></div></dialog>
 <dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
 <dialog id="ndlg"><div class="dlg" id="nbody"></div></dialog>
@@ -258,7 +322,7 @@ function renderAdmin(){
  $("at").querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomDialog(b.dataset.room));
  $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
  const tm=Object.fromEntries(T.map(t=>[t.id,t]));
- $("ar").innerHTML=`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
+ $("ar").innerHTML=`<tr><th>Tournament / Fee</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Payer UPI ID</th><th>Payment status</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1,paid=V.has(r.id);return `<tr><td>${esc(t?t.name:"(deleted)")}<br><small>₹${Number(t?.fee)||0}</small></td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi||"–")}<br><small>Submitted: ${r.paymentSubmittedAt?fmt(r.paymentSubmittedAt):"unknown"}</small></td><td><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" style="width:auto" data-v="${r.id}" ${paid?"checked":""} aria-label="Manually verify payment"><span>${paid?"Verified":"Pending"}</span></label></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
  $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{
   const r=R.find(y=>y.id===c.dataset.v);if(!r)return;
   const bt=writeBatch(db),vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
@@ -315,7 +379,9 @@ async function roomDialog(tid){
 }
 function openJoin(id){
  const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots*seatsOf(t))return;
- pick({t,slot:null,v:{ign:playerProfile.ign||"",uid:playerProfile.uid||"",phone:playerProfile.phone||""},payerUpi:playerProfile.upi||""});
+ // Never carry a saved payer UPI ID or payment state into a new registration.
+ // Every registration must go through the payment screen again.
+ pick({t,slot:null,v:{ign:playerProfile.ign||"",uid:playerProfile.uid||"",phone:playerProfile.phone||""},payerUpi:"",paymentOpened:false});
  if(!dlg.open)dlg.showModal();
 }
 function slotInfo(c){
@@ -330,14 +396,14 @@ function pick(c){
   tiles+=`<button type="button" class="tile ${free<=0?"full":k?"part":""} ${c.slot===i?"sel":""}" data-s="${i}" ${free<=0?"disabled":""}><b>${slotTag(t,i)}</b><span>${per===1?(free?"open":"taken"):free+"/"+per+" free"}</span></button>`}
  body.innerHTML=`<h3>Pick your ${isBR(t)?"slot":"team"}</h3><div class="meta">${esc(t.name)} · ${MODES[t.mode]} · Entry ₹${t.fee}${isBR(t)?(per>1?"<br>Take an empty slot, or join an open seat in another team.":""):(per>1?"<br>Choose a team. Friends can join the same team.":"<br>Choose your side.")}</div>
  <div class="tiles">${tiles}</div><div class="meta" id="si">${slotInfo(c)}</div><p class="err" id="e">${esc(c.msg||"")}</p>
- <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>${c.payerUpi?"Confirm this slot":"Continue"}</button></div>`;
+ <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>Continue</button></div>`;
  body.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
   c.slot=+b.dataset.s;c.msg="";
   body.querySelectorAll(".tile").forEach(x=>x.classList.toggle("sel",x===b));
   $("si").innerHTML=slotInfo(c);$("e").textContent="";$("n").disabled=false;
  });
  $("c").onclick=close;
- $("n").onclick=()=>{if(c.v&&c.payerUpi)submit(c);else details(c)};
+ $("n").onclick=()=>details(c);
 }
 function details(c){
  const t=c.t,v=c.v||{};
@@ -360,21 +426,26 @@ const PAYEE={upi:"7889354015@ptsbi",name:"TF TOURNAMENTS"};
 function pay(c){
  const t=c.t;
  const upiLink=`upi://pay?pa=${PAYEE.upi}&pn=${encodeURIComponent(PAYEE.name)}&am=${t.fee}&cu=INR&tn=${encodeURIComponent(t.name+" entry")}`;
+ // This flag belongs only to this in-memory registration attempt. Saved profile
+ // values are deliberately not used as evidence that payment was initiated.
  c.paymentOpened=false;
+ c.payerUpi="";
  body.innerHTML=`<h3>Pay ₹${t.fee}</h3>
- <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using any UPI app. After paying, return here and enter the UPI ID you paid from.</div>
- <label>Your UPI ID<input id="payerupi" maxlength="100" autocomplete="off" placeholder="example@upi" inputmode="email" value="${esc(playerProfile.upi||"")}"></label>
- <p class="meta" style="margin:0">Tap <b>Join Slot · ₹${t.fee}</b> once to open your UPI app. After payment, return, enter your UPI ID and tap the same button again to register.</p>
+ <div class="pay">Pay <b>₹${t.fee}</b> to <b>TF TOURNAMENTS</b> using a UPI app. After paying, return to this page and enter the UPI ID you paid from. Your request will remain <b>Pending</b> until an admin checks the payment.</div>
+ <label>Your UPI ID used for this payment<input id="payerupi" maxlength="100" autocomplete="off" placeholder="example@upi" inputmode="email" value=""></label>
+ <p class="meta" style="margin:0">First tap <b>Open UPI app</b>. Complete the payment, return to this page, enter your UPI ID, then tap <b>Submit for verification</b>.</p>
+ <p class="meta" style="margin:0">Your saved profile UPI ID is not used here. Enter the UPI ID used for this specific payment.</p>
  <p class="err" id="e"></p>
  <div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
- <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="joinpay" type="button">Join Slot · ₹${t.fee}</button></div>`;
+ <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="joinpay" type="button">Open UPI app</button></div>`;
  $("b").onclick=()=>details(c);
  $("cp").onclick=()=>{try{navigator.clipboard.writeText(PAYEE.upi).then(()=>{$("cp").textContent="Copied"})}catch(e){}};
  $("joinpay").onclick=()=>{
   const x=$("payerupi").value.trim();
   if(!c.paymentOpened){
    c.paymentOpened=true;
-   $("e").textContent="Opening your UPI app. Complete the payment, return here, enter your UPI ID and tap Join Slot again.";
+   $("e").textContent="UPI payment screen opened. Complete payment, return here, enter the payer UPI ID, and tap Submit for verification.";
+   $("joinpay").textContent="Submit for verification";
    window.location.href=upiLink;
    return;
   }
@@ -383,6 +454,7 @@ function pay(c){
    return;
   }
   c.payerUpi=x;
+  c.paymentSubmittedAt=Date.now();
   submit(c);
  };
 }
@@ -395,7 +467,7 @@ async function submit(c){
  for(let seat=0;seat<per&&got==null;seat++){
   if(used.has(seat))continue;
   const rid=t.id+"_"+v.uid,jid=`${t.id}_s${c.slot}_p${seat}`,bt=writeBatch(db);
-  bt.set(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,slot:c.slot,seat,jid,ign:v.ign,uid:v.uid,phone:v.phone,upi:c.payerUpi,at:Date.now()});
+  bt.set(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,slot:c.slot,seat,jid,ign:v.ign,uid:v.uid,phone:v.phone,upi:c.payerUpi,paymentStatus:"pending",paymentSubmittedAt:c.paymentSubmittedAt||Date.now(),at:Date.now()});
   bt.set(doc(db,"joins",jid),{tid:t.id,slot:c.slot,seat,ign:v.ign});
   try{await bt.commit();got=seat}catch(err){if(err.code!=="permission-denied")return pick(Object.assign(c,{msg:"Could not register. Check your connection and try again."}))}
  }
@@ -405,7 +477,7 @@ async function submit(c){
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
  syncWatch();
- body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
+ body.innerHTML=`<h3>Request submitted</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is reserved as <b>Pending payment verification</b>. Your slot is not confirmed yet. An admin must verify the payment before room details become available. We’ll send updates to ${esc(v.phone)}.</p>
  <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn" id="o">Done</button></div>`;
  $("o").onclick=close;render();
 }
@@ -443,7 +515,26 @@ function profileScreen(message=""){
 }
 async function showPlayerHistory(){const host=$("myHistory");if(!host||!auth.currentUser?.email)return;try{const q=query(collection(db,"registrations"),where("owner","==",auth.currentUser.uid));const snap=await getDocs(q);if(!snap.size){host.textContent="No registrations found for this account yet.";return;}host.innerHTML=snap.docs.map(d=>{const r=d.data(),t=T.find(x=>x.id===r.tid);return `<div class="nt" style="margin:8px 0"><b class="t">${esc(t?.name||"Tournament")}</b><p>${esc(r.ign||"")} · ${esc(r.uid||"")} · ${Number.isInteger(r.slot)?"Slot "+(r.slot+1):"Registered"}</p><p>Registration date: ${r.at?new Date(r.at).toLocaleString():"Unknown"}</p></div>`}).join("")}catch(e){host.textContent="Could not load history. Your Firestore rules may need to allow players to read their own registrations."}}
 async function playerAuth(create){const email=$("pEmail").value.trim().toLowerCase(),pass=$("pPass").value;if(!email||!pass)return $("pErr").textContent="Enter your email and password.";try{if(create){const credential=EmailAuthProvider.credential(email,pass);if(auth.currentUser?.isAnonymous){await linkWithCredential(auth.currentUser,credential)}else{await createUserWithEmailAndPassword(auth,email,pass)}}else{await signInWithEmailAndPassword(auth,email,pass)}await loadPlayerProfile();profileScreen();}catch(e){const messages={"auth/email-already-in-use":"This email already has an account. Tap Sign in instead.","auth/weak-password":"Use a stronger password with at least 6 characters.","auth/invalid-credential":"Email or password is incorrect.","auth/credential-already-in-use":"This email is already linked to another account. Sign in instead."};$("pErr").textContent=messages[e.code]||"Could not complete account action: "+(e.code||"please try again");}}
-$("profileBtn").onclick=async()=>{await loadPlayerProfile();profileScreen();profileDlg.showModal()};
+// Bottom navigation: tournament list and the existing player-profile flow.
+const bottomTournaments=$("bottomTournaments"),bottomProfile=$("bottomProfile");
+async function openPlayerProfile(){
+ setBottomActive("profile");
+ await loadPlayerProfile();
+ profileScreen();
+ profileDlg.showModal();
+}
+function setBottomActive(which){
+  const isProfile=which==="profile";
+  bottomTournaments.classList.toggle("active",!isProfile);
+  bottomProfile.classList.toggle("active",isProfile);
+  if(isProfile){bottomTournaments.removeAttribute("aria-current");bottomProfile.setAttribute("aria-current","page");}
+  else{bottomProfile.removeAttribute("aria-current");bottomTournaments.setAttribute("aria-current","page");}
+}
+bottomProfile.onclick=()=>openPlayerProfile();
+bottomTournaments.addEventListener("click",()=>setBottomActive("tournaments"));
+$("profileDlg").addEventListener("close",()=>setBottomActive("tournaments"));
+$("profileDlg").addEventListener("cancel",()=>setBottomActive("tournaments"));
+
 onAuthStateChanged(auth,u=>{
  if(!u){signInAnonymously(auth).catch(()=>{});return}
  if(watchUid!==u.uid){watchUid=u.uid;resetWatch()}
