@@ -67,6 +67,7 @@ dialog::backdrop{background:rgba(10,5,22,.72)}
 label{display:grid;gap:4px;font-size:14px;font-weight:600;color:var(--mute)}
 input,select{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
 textarea{font:500 16px Barlow,sans-serif;padding:11px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%;resize:vertical}
+.sec{margin-bottom:28px}.sh{font-size:24px;margin:0 0 4px}.sub2{color:var(--mute);margin:0 0 14px}#subtabs:empty{display:none}
 .err{color:var(--flame);font-size:14px;min-height:1.2em;margin:0}
 .pay{background:var(--panel2);border-radius:10px;padding:14px;font-size:15px}
 .pay b{font-size:18px;color:var(--gold)}
@@ -100,7 +101,7 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 <div class="hero">
   <div>
     <h1>Pay once. Land in a lobby that plays to win.</h1>
-    <p>Paid Free Fire tournaments in Solo, Duo and Squad. Pick a slot, pay the entry fee, get your room ID before the match.</p>
+    <p>Paid Free Fire tournaments: Solo, Duo and Squad, plus fast Clash Squad and Lone Wolf matches in 1v1, 2v2 and 4v4. Pick a slot, pay the entry fee, get your room ID before the match.</p>
     <a class="btn" href="#scrims">See open tournaments</a> <button class="btn ghost" id="shareApp" type="button">Share with friends</button>
   </div>
   <div class="next">
@@ -112,9 +113,10 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 
 <section id="scrims">
   <h2>Open tournaments</h2>
-  <p class="sub">Each box is one slot. In Duo and Squad you can take an empty slot or join an open seat in another team. Orange fill shows how full a slot is, gold is yours.</p>
+  <p class="sub">Pick a section below. Each box is one slot (or a team in Clash Squad and Lone Wolf). In team modes you can join an open seat. Orange fill shows how full it is, gold is yours.</p>
   <div class="tabs" id="tabs"></div>
-  <div class="grid" id="list"><div class="empty">Loading tournaments…</div></div>
+  <div class="tabs" id="subtabs"></div>
+  <div id="list"><div class="empty">Loading tournaments…</div></div>
 </section>
 
 <section id="admin" hidden>
@@ -122,7 +124,7 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
   <p class="sub">Only you can see this. Add a tournament and it appears for every player straight away.</p>
   <div class="form" id="af">
     <label>Tournament name<input id="a1" maxlength="30" placeholder="Night Rush"></label>
-    <label>Mode<select id="a2"><option value="solo">Solo</option><option value="duo">Duo</option><option value="squad" selected>Squad</option></select></label>
+    <label>Mode<select id="a2"><optgroup label="Battle Royale"><option value="solo">Solo</option><option value="duo">Duo</option><option value="squad" selected>Squad (4)</option></optgroup><optgroup label="Clash Squad"><option value="cs1">Clash Squad 1v1</option><option value="cs2">Clash Squad 2v2</option><option value="cs4">Clash Squad 4v4</option></optgroup><optgroup label="Lone Wolf"><option value="lw1">Lone Wolf 1v1</option><option value="lw2">Lone Wolf 2v2</option></optgroup></select></label>
     <label>Entry fee (₹)<input id="a3" type="number" min="0" value="50"></label>
     <label>Prize pool (₹)<input id="a4" type="number" min="0" value="1500"></label>
     <label>Prize per kill (₹)<input id="a8" type="number" min="0" value="5"></label>
@@ -162,7 +164,7 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
   <h2>Questions</h2>
   <details><summary>How do I get my money back?</summary><p>If a tournament is cancelled or doesn’t fill, every entry fee is refunded. Fees are not refunded after the room ID has been shared.</p></details>
   <details><summary>How are prizes paid?</summary><p>Winners receive their prize by UPI within 24 hours of the final match, after a quick check of results.</p></details>
-  <details><summary>What is the difference between the modes?</summary><p>Solo is one player per slot, Duo is a pair, and Squad is a team of 4.</p></details>
+  <details><summary>What is the difference between the modes?</summary><p>Battle Royale: Solo is one player per slot, Duo is a pair, Squad is a team of 4. Clash Squad and Lone Wolf are fast matches where two teams face each other, in 1v1, 2v2 or 4v4 (Lone Wolf is 1v1 or 2v2).</p></details>
   <details><summary>Do I need to be a certain level?</summary><p>You need Free Fire level 40 or higher, and the UID you register must be the one you play with.</p></details>
 </section>
 <section id="support">
@@ -187,36 +189,52 @@ if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(
 const app=initializeApp(firebaseConfig),auth=getAuth(app),fdb=getFirestore(app);
 
 const $=id=>document.getElementById(id);
-const MODES={solo:"Solo",duo:"Duo",squad:"Squad (4)"};
+const MODE={
+ solo:{g:"br",name:"Solo",seats:1},duo:{g:"br",name:"Duo",seats:2},squad:{g:"br",name:"Squad (4)",seats:4},
+ cs1:{g:"cs",name:"Clash Squad 1v1",seats:1},cs2:{g:"cs",name:"Clash Squad 2v2",seats:2},cs4:{g:"cs",name:"Clash Squad 4v4",seats:4},
+ lw1:{g:"lw",name:"Lone Wolf 1v1",seats:1},lw2:{g:"lw",name:"Lone Wolf 2v2",seats:2}};
+const MODES=Object.fromEntries(Object.entries(MODE).map(([k,v])=>[k,v.name]));
+const GROUPS=[["br","Battle Royale","Big lobbies with many players. Solo, Duo and Squad."],["cs","Clash Squad","Fast team fights. Pick 1v1, 2v2 or 4v4."],["lw","Lone Wolf","Quick duels. Pick 1v1 or 2v2."]];
+const SUBS={br:[["1","Solo"],["2","Duo"],["4","Squad"]],cs:[["1","1v1"],["2","2v2"],["4","4v4"]],lw:[["1","1v1"],["2","2v2"]]};
+let cat="all",sub="all";
+const isBR=t=>!MODE[t.mode]||MODE[t.mode].g==="br";
+const slotTag=(t,i)=>isBR(t)||i>25?String(i+1):String.fromCharCode(65+i);
+const slotName=(t,i)=>(isBR(t)?"Slot ":"Team ")+slotTag(t,i);
 let T=[],J=[],V=new Set(),R=[],mode="all",isAdmin=false,db=fdb,mine={},adminUnsubs=[];
 try{mine=JSON.parse(localStorage.getItem("tf_regs")||"{}")}catch(e){}
 const fmt=d=>new Date(d).toLocaleString([], {weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const SEATS={solo:1,duo:2,squad:4};
-const seatsOf=t=>SEATS[t.mode]||1;
+const seatsOf=t=>(MODE[t.mode]&&MODE[t.mode].seats)||1;
 const joinsOf=id=>J.filter(j=>j.tid===id&&Number.isInteger(j.slot));
 const taken=id=>joinsOf(id).length;
 const slotJoins=(id,sl)=>joinsOf(id).filter(j=>j.slot===sl);
 const myList=id=>{const m=mine[id];return !m?[]:Array.isArray(m)?m:[{c:m,s:-1}]};
 const upcoming=()=>T.filter(t=>t.start>Date.now()).sort((a,b)=>a.start-b.start);
 
-function render(){
- $("tabs").innerHTML=["all","solo","duo","squad"].map(m=>`<button data-m="${m}" aria-pressed="${m===mode}">${m==="all"?"All":MODES[m].replace(" (4)","")}</button>`).join("");
- $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;render()});
- const list=upcoming().filter(t=>mode==="all"||t.mode===mode);
- if(!list.length){$("list").innerHTML=`<div class="empty">${db?"No tournaments in this mode right now. Check back soon.":"Live tournaments load when you open this page signed in to claude.ai."}</div>`}
- else $("list").innerHTML=list.map(t=>{
-  const per=seatsOf(t),total=t.slots*per,n=taken(t.id),left=total-n,my=myList(t.id).map(x=>x.s);let b="";
-  for(let i=0;i<t.slots;i++){const k=slotJoins(t.id,i).length,pct=Math.round(k/per*100);
-   b+=`<i class="${my.includes(i)?"me":""}" style="${k&&!my.includes(i)?`background:linear-gradient(to top,var(--flame) ${pct}%,var(--panel2) ${pct}%);border-color:var(--flame)`:""}"></i>`}
-  return `<article class="card ${t.fee>=100?"hot":""}">
-   <div class="row"><h3>${esc(t.name)}</h3><span class="tag">${MODES[t.mode]}</span></div>
+function card(t){
+ const per=seatsOf(t),total=t.slots*per,n=taken(t.id),left=total-n,my=myList(t.id).map(x=>x.s).filter(x=>x>=0);let b="";
+ for(let i=0;i<t.slots;i++){const k=slotJoins(t.id,i).length,pct=Math.round(k/per*100);
+  b+=`<i class="${my.includes(i)?"me":""}" style="${k&&!my.includes(i)?`background:linear-gradient(to top,var(--flame) ${pct}%,var(--panel2) ${pct}%);border-color:var(--flame)`:""}"></i>`}
+ return `<article class="card ${t.fee>=100?"hot":""}">
+   <div class="row"><h3>${esc(t.name)}</h3><span class="tag">${esc(MODES[t.mode]||t.mode)}</span></div>
    <div class="money"><div><b>₹${t.fee}</b><span>entry fee</span></div><div><b class="prize">₹${t.prize}</b><span>prize pool</span></div>${t.kill?`<div><b class="prize">₹${t.kill}</b><span>per kill</span></div>`:""}</div>
    <div class="meta">${fmt(t.start)} · ${esc(t.map)}</div>
    <div class="slots" role="img" aria-label="${n} of ${total} seats taken">${b}</div>
-   ${my.length&&my[0]>=0?`<div class="meta">Your slot: ${my.map(x=>x+1).join(", ")}</div>`:""}
+   ${my.length?`<div class="meta">You’re in: ${my.map(x=>slotName(t,x)).join(", ")}</div>`:""}
    <div class="row"><span class="left">${left>0?left+" seat"+(left>1?"s":"")+" left":"Full"}</span>
-   <div class="acts"><button class="btn ghost" type="button" data-details="${t.id}">Details</button><button class="btn" data-id="${t.id}" ${left>0?"":"disabled"}>${left>0?"Join":"Full"}</button></div></div></article>`}).join("");
+   <div class="acts"><button class="btn ghost" type="button" data-details="${t.id}">Details</button><button class="btn" data-id="${t.id}" ${left>0?"":"disabled"}>${left>0?"Join":"Full"}</button></div></div></article>`;
+}
+function render(){
+ $("tabs").innerHTML=[["all","All"],...GROUPS.map(g=>[g[0],g[1]])].map(([k,n])=>`<button data-m="${k}" aria-pressed="${k===cat}">${n}</button>`).join("");
+ $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{cat=b.dataset.m;sub="all";render()});
+ $("subtabs").innerHTML=cat==="all"?"":[["all","All"],...SUBS[cat]].map(([k,n])=>`<button data-sub="${k}" aria-pressed="${k===sub}">${n}</button>`).join("");
+ $("subtabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{sub=b.dataset.sub;render()});
+ const list=upcoming().filter(t=>MODE[t.mode]&&(cat==="all"||MODE[t.mode].g===cat)&&(sub==="all"||String(MODE[t.mode].seats)===sub));
+ const parts=GROUPS.filter(g=>cat==="all"||g[0]===cat).map(g=>{
+  const ts=list.filter(t=>MODE[t.mode].g===g[0]);
+  if(!ts.length)return cat==="all"?"":`<div class="empty">No ${g[1]} matches right now. Check back soon.</div>`;
+  return `<div class="sec"><h3 class="sh">${g[1]}</h3><p class="sub2">${g[2]}</p><div class="grid">${ts.map(card).join("")}</div></div>`}).join("");
+ $("list").innerHTML=parts||`<div class="empty">${db?"No tournaments right now. Check back soon.":"Live tournaments load when you open this page."}</div>`;
  $("list").querySelectorAll("button[data-details]").forEach(b=>b.onclick=()=>showTournamentDetails(b.dataset.details));
  $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
  const nx=upcoming()[0];
@@ -239,7 +257,7 @@ function renderAdmin(){
  $("at").querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomDialog(b.dataset.room));
  $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
  const tm=Object.fromEntries(T.map(t=>[t.id,t]));
- $("ar").innerHTML=`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
+ $("ar").innerHTML=`<tr><th>Tournament</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Player UPI ID</th><th>Paid</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1;return `<tr><td>${esc(t?t.name:"(deleted)")}</td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi)}</td><td><input type="checkbox" style="width:auto" data-v="${r.id}" ${V.has(r.id)?"checked":""} aria-label="Payment verified"></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
  $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{
   const r=R.find(y=>y.id===c.dataset.v);if(!r)return;
   const bt=writeBatch(db),vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
@@ -260,7 +278,7 @@ $("aadd").onclick=async()=>{
   $("a1").value="";$("a9").value="";e.textContent="Tournament added.";
  }catch(x){e.textContent="Could not save: "+(x.message||"permission denied")}
 };
-$("a2").onchange=()=>{$("a6").value={solo:48,duo:24,squad:12}[$("a2").value]};
+$("a2").onchange=()=>{$("a6").value={solo:48,duo:24,squad:12,cs1:2,cs2:2,cs4:2,lw1:2,lw2:2}[$("a2").value]};
 
 const dlg=$("dlg"),body=$("dbody"),close=()=>dlg.close();
 function doShare(text){
@@ -300,16 +318,16 @@ function openJoin(id){
  if(!dlg.open)dlg.showModal();
 }
 function slotInfo(c){
- if(c.slot==null)return "Tap a slot to choose it.";
+ if(c.slot==null)return isBR(c.t)?"Tap a slot to choose it.":"Tap a team to choose it.";
  const t=c.t,per=seatsOf(t),js=slotJoins(t.id,c.slot),free=per-js.length;
- if(per===1)return "Slot "+(c.slot+1)+" selected.";
- return "Slot "+(c.slot+1)+": "+(js.length?esc(js.map(j=>j.ign).join(", "))+" · ":"empty · ")+free+" seat"+(free>1?"s":"")+" free";
+ if(per===1)return slotName(t,c.slot)+" selected.";
+ return slotName(t,c.slot)+": "+(js.length?esc(js.map(j=>j.ign).join(", "))+" · ":"empty · ")+free+" seat"+(free>1?"s":"")+" free";
 }
 function pick(c){
  const t=c.t,per=seatsOf(t);let tiles="";
  for(let i=0;i<t.slots;i++){const k=slotJoins(t.id,i).length,free=per-k;
-  tiles+=`<button type="button" class="tile ${free<=0?"full":k?"part":""} ${c.slot===i?"sel":""}" data-s="${i}" ${free<=0?"disabled":""}><b>${i+1}</b><span>${per===1?(free?"open":"taken"):free+"/"+per+" free"}</span></button>`}
- body.innerHTML=`<h3>Pick your slot</h3><div class="meta">${esc(t.name)} · ${MODES[t.mode]} · Entry ₹${t.fee}${per>1?"<br>Take an empty slot, or join an open seat in another team.":""}</div>
+  tiles+=`<button type="button" class="tile ${free<=0?"full":k?"part":""} ${c.slot===i?"sel":""}" data-s="${i}" ${free<=0?"disabled":""}><b>${slotTag(t,i)}</b><span>${per===1?(free?"open":"taken"):free+"/"+per+" free"}</span></button>`}
+ body.innerHTML=`<h3>Pick your ${isBR(t)?"slot":"team"}</h3><div class="meta">${esc(t.name)} · ${MODES[t.mode]} · Entry ₹${t.fee}${isBR(t)?(per>1?"<br>Take an empty slot, or join an open seat in another team.":""):(per>1?"<br>Choose a team. Friends can join the same team.":"<br>Choose your side.")}</div>
  <div class="tiles">${tiles}</div><div class="meta" id="si">${slotInfo(c)}</div><p class="err" id="e">${esc(c.msg||"")}</p>
  <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>${c.payerUpi?"Confirm this slot":"Continue"}</button></div>`;
  body.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
@@ -322,7 +340,7 @@ function pick(c){
 }
 function details(c){
  const t=c.t,v=c.v||{};
- body.innerHTML=`<h3>Your details</h3><div class="meta">${esc(t.name)} · Slot ${c.slot+1}</div>
+ body.innerHTML=`<h3>Your details</h3><div class="meta">${esc(t.name)} · ${slotName(t,c.slot)}</div>
  <label>In-game name<input id="f2" maxlength="24" autocomplete="off" value="${esc(v.ign||"")}"></label>
  <label>Free Fire UID<input id="f3" inputmode="numeric" maxlength="12" autocomplete="off" value="${esc(v.uid||"")}"></label>
  <label>WhatsApp number<input id="f4" inputmode="tel" maxlength="15" autocomplete="tel" value="${esc(v.phone||"")}"></label>
@@ -385,7 +403,7 @@ async function submit(c){
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
  syncWatch();
- body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">Slot ${c.slot+1}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
+ body.innerHTML=`<h3>You’re in, ${esc(v.ign)}</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is held. We’ll check your payment and send the room ID to ${esc(v.phone)} 15 minutes before start.</p>
  <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn" id="o">Done</button></div>`;
  $("o").onclick=close;render();
 }
@@ -476,7 +494,7 @@ function renderNotes(){
  else if(perm==="denied")h+=`<p class="meta" style="margin:0">Phone alerts are off. Turn them on in your phone’s app settings. Reminders still show here.</p>`;
  if(!ids.length)h+=`<div class="empty">Join a tournament to see its updates here. Once your payment is confirmed, you get a reminder and the room ID 10 minutes before the match.</div>`;
  else h+=ids.map(tid=>{
-  const t=T.find(x=>x.id===tid),sl=myList(tid).filter(x=>x.s>=0).map(x=>x.s+1).join(", "),now=Date.now(),inWin=t.start-600000<=now;
+  const t=T.find(x=>x.id===tid),sl=myList(tid).filter(x=>x.s>=0).map(x=>slotName(t,x.s)).join(", "),now=Date.now(),inWin=t.start-600000<=now;
   const at=new Date(t.start-600000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
   let st;
   if(!ACC.has(tid))st="Waiting for payment confirmation. You will be notified once it is marked paid.";
@@ -484,7 +502,7 @@ function renderNotes(){
   else if(t.start<=now)st="Payment confirmed. This match has started.";
   else if(!inWin)st=`Payment confirmed. The room ID appears here at ${at}, 10 minutes before the match.`;
   else st="Payment confirmed. The match starts soon. Waiting for the room details.";
-  return `<div class="nt"><b class="t">${esc(t.name)}${sl?" · Slot "+sl:""}</b><div class="meta">${fmt(t.start)}</div><p>${st}</p></div>`;
+  return `<div class="nt"><b class="t">${esc(t.name)}${sl?" · "+sl:""}</b><div class="meta">${fmt(t.start)}</div><p>${st}</p></div>`;
  }).join("");
  h+=`<div class="acts"><button class="btn" id="nc">Close</button></div>`;
  el.innerHTML=h;
