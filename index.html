@@ -99,17 +99,13 @@ header{flex-wrap:wrap;gap:8px}.hr{display:flex;align-items:center;gap:8px}.hr .m
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 
-/* Subtle Free Fire-inspired red watermark texture */
+/* Translucent esports texture: rifles, grenades, helmets, crosshairs and more */
 body{
-  background-image:
-    radial-gradient(ellipse at 85% 0%,rgba(255,41,69,.13),transparent 36%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='420' viewBox='0 0 520 420'%3E%3Cg fill='none' stroke='%23ff5268' stroke-opacity='.105' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(28 58) rotate(-18 90 48)'%3E%3Cpath d='M18 43h106l18 9h35v15h-42l-14-8H82l-8 28H53l4-29H18z'/%3E%3Cpath d='M38 42V29h75v14M130 53v-9h23v9M89 67l-2 23M24 42V33h-9v10'/%3E%3C/g%3E%3Cg transform='translate(340 42)'%3E%3Cpath d='M34 10c-17 0-27 13-27 31v49c0 19 10 31 27 31s27-12 27-31V41C61 23 51 10 34 10z'/%3E%3Cpath d='M23 10V1h22v9M23 31h22M24 48h20M25 68h18M25 88h18M58 20l15-9 8 12-17 12'/%3E%3C/g%3E%3Ctext x='250' y='250' fill='%23ff5268' fill-opacity='.07' stroke='none' font-family='Arial,sans-serif' font-size='30' font-weight='900' letter-spacing='3' transform='rotate(-18 250 250)'%3EFREE FIRE%3C/text%3E%3Cg transform='translate(105 285) rotate(16 90 35)'%3E%3Cpath d='M10 25h145l17 9h28v12h-31l-17-8H83l-7 24H58l3-25H10zM36 24V13h75v11'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
-    var(--bg);
-  background-repeat: no-repeat, repeat, no-repeat;
-  background-size: auto, 520px 420px, auto;
-  background-attachment: fixed;
+  background-color:var(--bg);
+  background-image:radial-gradient(ellipse at 85% 0%,rgba(255,41,69,.14),transparent 38%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='560' viewBox='0 0 640 560'%3E%3Cg stroke='%23ff4d5f' stroke-opacity='.085' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cg transform='translate(24 36) rotate(-12 40 30) scale(1.0)'%3E%3Cpath d='M4 22h30v20H12q-8 0-8-8z'/%3E%3Crect x='34' y='20' width='62' height='18' rx='2'/%3E%3Cpath d='M96 25h50M96 33h50'/%3E%3Crect x='146' y='22' width='10' height='14'/%3E%3Cpath d='M52 20v-8h16v8'/%3E%3Cpath d='M58 38l-4 24h14l4-24'/%3E%3Cpath d='M38 38l-6 20h11l4-20'/%3E%3Cpath d='M80 38q0 8 8 8'/%3E%3C/g%3E%3Cg transform='translate(285 24) rotate(14 40 30) scale(0.9)'%3E%3Cellipse cx='32' cy='48' rx='22' ry='26'/%3E%3Crect x='24' y='12' width='16' height='10' rx='2'/%3E%3Cpath d='M40 14q22-4 26 12l-7 3q-3-8-19-5'/%3E%3Ccircle cx='58' cy='10' r='6'/%3E%3Cpath d='M14 40h36M12 52h40M18 64h28M32 22v52'/%3E%3C/g%3E%3Cg transform='translate(450 30) rotate(0 40 30) scale(0.9)'%3E%3Ccircle cx='40' cy='40' r='28'/%3E%3Cpath d='M40 4v20M40 56v20M4 40h20M56 40h20'/%3E%3Ccircle cx='40' cy='40' r='3'/%3E%3C/g%3E%3Cg transform='translate(555 36) rotate(10 40 30) scale(0.8)'%3E%3Cpath d='M16 8h38v22q0 20-19 20t-19-20z'/%3E%3Cpath d='M16 14H6q0 16 12 18M54 14h10q0 16-12 18'/%3E%3Cpath d='M35 50v14M20 70h30'/%3E%3C/g%3E%3Cg transform='translate(40 205) rotate(-8 40 30) scale(0.9)'%3E%3Cpath d='M8 48q0-38 37-38t37 38z'/%3E%3Cpath d='M8 48h74v10H8z'/%3E%3Cpath d='M22 44q0-18 23-18'/%3E%3Cpath d='M62 48v10'/%3E%3C/g%3E%3Cg transform='translate(235 190) rotate(10 40 30) scale(1.0)'%3E%3Crect x='6' y='8' width='70' height='16' rx='2'/%3E%3Cpath d='M76 12h14v8H76'/%3E%3Cpath d='M14 24l-8 38h24l8-38'/%3E%3Cpath d='M36 24q2 14 14 14h8'/%3E%3Cpath d='M20 12v8M24 12v8M28 12v8'/%3E%3C/g%3E%3Cg transform='translate(405 195) rotate(-10 40 30) scale(0.85)'%3E%3Cpath d='M30 4q6 18 18 30t0 36q-6 8-18 8t-18-8q-12-14 0-36q8 8 12 6q-4-20 6-36z'/%3E%3Cpath d='M30 42q8 10 4 20t-8 0q-2-8 4-20z'/%3E%3C/g%3E%3Cg transform='translate(520 225) rotate(12 40 30) scale(0.95)'%3E%3Crect x='4' y='12' width='52' height='36' rx='6'/%3E%3Cpath d='M20 12V6h20v6M30 22v16M22 30h16'/%3E%3C/g%3E%3Cg transform='translate(30 380) rotate(8 40 30) scale(0.85)'%3E%3Cpath d='M6 36q0-30 39-30t39 30z'/%3E%3Cpath d='M6 36q10-10 19 0q10-10 20 0q10-10 20 0q10-10 19 0'/%3E%3Cpath d='M6 36l32 40M84 36L52 76M45 36v40'/%3E%3Crect x='38' y='76' width='14' height='10' rx='2'/%3E%3C/g%3E%3Cg transform='translate(210 390) rotate(-10 40 30) scale(0.9)'%3E%3Cpath d='M22 12h56q18 0 20 24l2 14q0 8-8 8-6 0-10-8l-6-8H34l-6 8q-4 8-10 8-8 0-8-8l2-14q2-24 20-24z'/%3E%3Cpath d='M30 24v14M23 31h14'/%3E%3Ccircle cx='68' cy='26' r='3'/%3E%3Ccircle cx='78' cy='34' r='3'/%3E%3C/g%3E%3Cg transform='translate(380 420) rotate(-22 40 30) scale(1.0)'%3E%3Cpath d='M4 14h26v12H4z'/%3E%3Cpath d='M30 14h64q14 0 16 14H30z'/%3E%3C/g%3E%3Cg transform='translate(535 375) rotate(10 40 30) scale(0.8)'%3E%3Cpath d='M10 44v-8q0-28 30-28t30 28v8'/%3E%3Crect x='6' y='42' width='14' height='24' rx='5'/%3E%3Crect x='60' y='42' width='14' height='24' rx='5'/%3E%3Cpath d='M66 66q0 10-24 10'/%3E%3C/g%3E%3Cg transform='translate(330 490) rotate(0 40 30) scale(0.8)'%3E%3Cpath d='M30 4l24 8v22q0 22-24 34-24-12-24-34V12z'/%3E%3Cpath d='M20 34l7 7 14-16'/%3E%3C/g%3E%3C/g%3E%3Ctext x='60' y='528' stroke='none' fill='%23ff4d5f' fill-opacity='.085' font-family='Arial,sans-serif' font-size='26' font-weight='900' letter-spacing='6' transform='rotate(-6 60 528)'%3EBOOYAH%3C/text%3E%3C/svg%3E");
+  background-repeat:no-repeat,repeat;
+  background-size:auto,640px 560px;
 }
-
 /* TF Tournaments refreshed mobile-first interface */
 :root{scroll-padding-bottom:110px}
 body{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));background-color:var(--bg)}
@@ -181,6 +177,38 @@ html,body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 a,img,button,svg{-webkit-touch-callout:none;-webkit-user-drag:none}
 input,textarea,select,.nt,.code,#nbody .nt *{-webkit-user-select:text;user-select:text}
+
+/* ===== Arena look for tournaments, calm look for help ===== */
+.hero{position:relative}
+.hero>*{position:relative;z-index:1}
+.hero::after{content:"";position:absolute;z-index:0;right:-70px;top:-30px;width:380px;height:380px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg fill='none' stroke='%23ff4d5f' stroke-opacity='.13' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='210' cy='210' r='170'/%3E%3Ccircle cx='210' cy='210' r='120' stroke-dasharray='6 14'/%3E%3Cpath d='M210 10v70M210 340v70M10 210h70M340 210h70'/%3E%3Cg transform='translate(150 120) scale(2)'%3E%3Cpath d='M30 4q6 18 18 30t0 36q-6 8-18 8t-18-8q-12-14 0-36q8 8 12 6q-4-20 6-36z'/%3E%3Cpath d='M30 42q8 10 4 20t-8 0q-2-8 4-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;pointer-events:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.chips span{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--flame) 45%,var(--line));background:color-mix(in srgb,var(--flame) 10%,transparent)}
+#scrims{margin:14px 0 26px;padding:26px 16px 22px;border:2px solid color-mix(in srgb,var(--flame) 60%,var(--line));border-radius:8px 30px 8px 30px;background:linear-gradient(160deg,color-mix(in srgb,var(--flame) 15%,transparent),color-mix(in srgb,var(--panel) 72%,transparent) 42%,color-mix(in srgb,var(--panel) 55%,transparent));box-shadow:0 24px 70px color-mix(in srgb,var(--flame) 16%,transparent)}
+#scrims h2{font-size:clamp(30px,7vw,46px);text-transform:uppercase;letter-spacing:.01em}
+#scrims h2::before{content:"Live lobbies";display:block;font:700 12px Barlow,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--flame);margin-bottom:8px}
+#scrims h2::after{content:"";display:block;width:72px;height:6px;margin-top:12px;background:var(--flame);transform:skewX(-30deg)}
+#scrims .tabs button{border-radius:4px 14px 4px 14px;text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+#scrims .sh{text-transform:uppercase;letter-spacing:.02em}
+#scrims .sh::before{content:"";display:inline-block;width:8px;height:22px;margin-right:10px;vertical-align:-3px;background:var(--flame);transform:skewX(-20deg)}
+#scrims .card{border-radius:6px 24px 6px 24px;border-left:6px solid var(--flame);background:linear-gradient(135deg,color-mix(in srgb,var(--flame) 10%,var(--panel)),var(--panel) 58%)}
+#scrims .money b{font-size:30px}
+.tag.g-cs{background:color-mix(in srgb,var(--gold) 26%,transparent);color:var(--gold)}
+.tag.g-lw{background:color-mix(in srgb,#3aa0ff 24%,transparent);color:#6cb8ff}
+#how,#rules{padding:30px 0}
+#faq,#support{margin:22px 0;padding:24px 18px;border:1px solid var(--line);border-radius:22px;background:color-mix(in srgb,var(--panel) 92%,transparent);box-shadow:none}
+#faq h2,#support h2{font-family:Barlow,system-ui,sans-serif;font-weight:700;font-size:24px;text-transform:none}
+#faq h2::before,#support h2::before{display:block;font:700 12px Barlow,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:4px}
+#faq h2::before{content:"Help center"}
+#support h2::before{content:"We are here to help"}
+#faq details{border-radius:12px;box-shadow:none;background:var(--bg)}
+#support .support a{border-radius:999px;box-shadow:none}
+/* Back button at the top left of every pop-up */
+.dtop{position:sticky;top:0;z-index:5;display:flex;align-items:center;padding:6px 8px;background:var(--panel);border-bottom:1px solid var(--line)}
+.dback{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink);font:600 15px Barlow,sans-serif;padding:8px 14px 8px 8px;border-radius:999px;cursor:pointer}
+.dback:active{background:var(--panel2)}
+.dback svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:760px){.hero::after{width:300px;height:300px;right:-90px;top:10px}#scrims{padding:22px 12px 18px}}
 </style>
 </head>
 <body>
@@ -195,6 +223,7 @@ input,textarea,select,.nt,.code,#nbody .nt *{-webkit-user-select:text;user-selec
   <div>
     <h1>Pay once. Land in a lobby that plays to win.</h1>
     <p>Paid Free Fire tournaments: Solo, Duo and Squad, plus fast Clash Squad and Lone Wolf matches in 1v1, 2v2 and 4v4. Pick a slot, pay the entry fee, get your room ID before the match.</p>
+    <div class="chips"><span>Pick your slot</span><span>Per-kill prizes</span><span>Room ID 10 min before</span></div>
     <a class="btn" href="#scrims">See open tournaments</a> <button class="btn ghost" id="shareApp" type="button">Share with friends</button>
   </div>
   <div class="next">
@@ -307,6 +336,7 @@ const MODES=Object.fromEntries(Object.entries(MODE).map(([k,v])=>[k,v.name]));
 const GROUPS=[["br","Battle Royale","Big lobbies with many players. Solo, Duo and Squad."],["cs","Clash Squad","Fast team fights. Pick 1v1, 2v2 or 4v4."],["lw","Lone Wolf","Quick duels. Pick 1v1 or 2v2."]];
 const SUBS={br:[["1","Solo"],["2","Duo"],["4","Squad"]],cs:[["1","1v1"],["2","2v2"],["4","4v4"]],lw:[["1","1v1"],["2","2v2"]]};
 let cat="all",sub="all",playerProfile={};
+const prizeText=t=>{const p=String(t.prize??"").trim();return /^\d+(\.\d+)?$/.test(p)?"₹"+p:(p||"Not announced")};
 const isBR=t=>!MODE[t.mode]||MODE[t.mode].g==="br";
 const slotTag=(t,i)=>isBR(t)||i>25?String(i+1):String.fromCharCode(65+i);
 const slotName=(t,i)=>(isBR(t)?"Slot ":"Team ")+slotTag(t,i);
@@ -329,9 +359,9 @@ function card(t){
  for(let i=0;i<t.slots;i++){const k=slotJoins(t.id,i).length,pct=Math.round(k/per*100);
   b+=`<i class="${my.includes(i)?"me":""}" style="${k&&!my.includes(i)?`background:linear-gradient(to top,var(--flame) ${pct}%,var(--panel2) ${pct}%);border-color:var(--flame)`:""}"></i>`}
  return `<article class="card ${t.fee>=100?"hot":""}">
-   <div class="row"><h3>${esc(t.name)}</h3><span class="tag">${esc(MODES[t.mode]||t.mode)}</span></div>
+   <div class="row"><h3>${esc(t.name)}</h3><span class="tag g-${(MODE[t.mode]||{}).g||"br"}">${esc(MODES[t.mode]||t.mode)}</span></div>
    <div class="money"><div><b>₹${t.fee}</b><span>entry fee</span></div>${t.kill?`<div><b class="prize">₹${t.kill}</b><span>per kill</span></div>`:""}</div>
-   <div class="prize-distribution"><b>Prize pool &amp; distribution</b><div>${esc(String(t.prize??"").trim()||"Not announced")}</div></div>
+   <div class="prize-distribution"><b>Prize pool &amp; distribution</b><div>${esc(prizeText(t))}</div></div>
    <div class="meta">${fmt(t.start)} · ${esc(t.map)}</div>
    <div class="slots" role="img" aria-label="${n} of ${total} seats taken">${b}</div>
    ${my.length?`<div class="meta">You’re in: ${my.map(x=>slotName(t,x)).join(", ")}</div>`:""}
@@ -406,13 +436,13 @@ function showTournamentDetails(id){
  const t=T.find(x=>x.id===id);
  if(!t)return;
  body.innerHTML=`<h3>${esc(t.name)}</h3>
-  <div class="pay"><b>Tournament information</b><div class="meta" style="margin-top:8px">Mode: ${esc(MODES[t.mode]||t.mode)}<br>Start: ${esc(fmt(t.start))}<br>Map: ${esc(t.map||"Not specified")}<br>Entry fee: ₹${Number(t.fee)||0}<br>Prize pool / distribution: ${esc(String(t.prize??"").trim()||"Not announced")}${t.kill?`<br>Prize per kill: ₹${Number(t.kill)}`:""}<br>Slots: ${Number(t.slots)||0}</div></div>
+  <div class="pay"><b>Tournament information</b><div class="meta" style="margin-top:8px">Mode: ${esc(MODES[t.mode]||t.mode)}<br>Start: ${esc(fmt(t.start))}<br>Map: ${esc(t.map||"Not specified")}<br>Entry fee: ₹${Number(t.fee)||0}<br>Prize pool / distribution: ${esc(prizeText(t))}${t.kill?`<br>Prize per kill: ₹${Number(t.kill)}`:""}<br>Slots: ${Number(t.slots)||0}</div></div>
   <h3 style="font-size:19px">Published details</h3>
   <div class="meta" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(t.details||"The organiser has not published additional details for this tournament yet.")}</div>
   <div class="acts"><button class="btn ghost" id="dc">Close</button><button class="btn ghost" id="ds" type="button">Share</button>
 <button class="btn" id="dj" ${taken(t.id)>=t.slots*seatsOf(t)?"disabled":""}>Join tournament</button></div>`;
  $("dc").onclick=close;
- $("ds").onclick=()=>doShare(t.name+" ("+(MODES[t.mode]||t.mode)+") on "+fmt(t.start)+". Entry ₹"+(Number(t.fee)||0)+", prize pool / distribution: "+(String(t.prize??"").trim()||"Not announced")+(t.kill?", ₹"+Number(t.kill)+" per kill":"")+". Join on TF Tournaments:");
+ $("ds").onclick=()=>doShare(t.name+" ("+(MODES[t.mode]||t.mode)+") on "+fmt(t.start)+". Entry ₹"+(Number(t.fee)||0)+", prize pool / distribution: "+prizeText(t)+(t.kill?", ₹"+Number(t.kill)+" per kill":"")+". Join on TF Tournaments:");
  $("dj").onclick=()=>{close();openJoin(t.id)};
  if(!dlg.open)dlg.showModal();
 }
@@ -746,6 +776,21 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)Object.key
 $("shareApp").onclick=()=>doShare("Join paid Free Fire tournaments in Solo, Duo and Squad on TF Tournaments.");
 // Hide browser long-press menus (copy link, open in new tab) outside typing areas and room details
 document.addEventListener("contextmenu",e=>{if(!(e.target.closest&&e.target.closest("input,textarea,.nt,.code")))e.preventDefault()});
+
+// Back button at the top left of every pop-up
+document.querySelectorAll("dialog").forEach(d=>{
+ const bar=document.createElement("div");bar.className="dtop";
+ const b=document.createElement("button");b.type="button";b.className="dback";b.setAttribute("aria-label","Back");
+ b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Back</span>';
+ b.onclick=()=>{
+  if(d.id==="dlg"){
+   if(/Saving your slot/.test(d.textContent))return;
+   const inner=d.querySelector("#b");if(inner){inner.click();return}
+  }
+  d.close();
+ };
+ bar.appendChild(b);d.insertBefore(bar,d.firstChild);
+});
 
 // Support buttons
 (function(){
