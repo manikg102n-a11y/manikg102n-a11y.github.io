@@ -224,7 +224,7 @@ dialog#dlg .dtop,dialog#ldlg .dtop{padding-top:8px;background:color-mix(in srgb,
 .dsteps i{display:block;width:18px;height:6px;border-radius:9px;background:var(--line);transition:background .25s,width .25s}
 .dsteps i.on{background:var(--flame);width:22px}
 @media (min-width:760px){
- #ndlg,#profileDlg,#settingsDlg,#joinHelpDlg{inset:0;margin:auto;width:min(620px,92vw);height:min(88vh,880px);border-radius:28px;border:2px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.55)}
+ #ndlg,#profileDlg,#settingsDlg,#lbDlg,#joinHelpDlg{inset:0;margin:auto;width:min(620px,92vw);height:min(88vh,880px);border-radius:28px;border:2px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.55)}
  dialog#dlg,dialog#ldlg{inset:0;margin:auto;border-radius:28px;border:2px solid var(--flame)}
 }
 .btn{transition:transform .15s ease,box-shadow .25s ease,filter .2s ease,background .2s}
@@ -261,13 +261,27 @@ html,body{max-width:100%;overflow-x:clip}
 @supports not (overflow:clip){
   html,body{overflow-x:hidden}
 }
+
+/* ===== Leaderboard ===== */
+#lbDlg .dlg{position:relative;isolation:isolate}
+#lbDlg .dlg::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.13;
+ background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='%23d9a31f'%3E%3Cpath d='M60 20h80v50c0 25-18 45-40 45S60 95 60 70z'/%3E%3Cpath d='M60 32H30c0 30 10 48 36 54l-2-14c-14-6-20-16-22-26h18zM140 32h30c0 30-10 48-36 54l2-14c14-6 20-16 22-26h-18z'/%3E%3Crect x='92' y='112' width='16' height='32'/%3E%3Cpath d='M70 144h60l8 22H62z'/%3E%3Crect x='56' y='166' width='88' height='14' rx='3'/%3E%3C/g%3E%3Cpath d='M100 36l7 15 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z' fill='%23fff' opacity='.35'/%3E%3C/svg%3E") center 40px/min(420px,80%) no-repeat}
+#lbDlg .lbcard{background:color-mix(in srgb,var(--panel) 82%,transparent);border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+#lbDlg .lbcard h3{font-size:18px;margin-bottom:8px}
+#lbDlg td,#lbDlg th{white-space:nowrap}
+#lbDlg .rk{font-family:"Russo One",Impact,sans-serif;color:var(--gold)}
+#lbDlg .pz{color:var(--ok);font-weight:600}
+#lbAdmin .form{margin-bottom:12px}
+.bottom-nav.three{grid-template-columns:1fr 1fr 1fr;gap:6px}
+.bottom-nav.three .bottom-tab{font-size:13px;gap:6px;flex-direction:column;min-height:56px}
+@media(min-width:761px){.bottom-nav.three{width:480px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
-  <nav><a href="#scrims">Tournaments</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
+  <nav><a href="#scrims">Tournaments</a><a href="#" id="navLb">Leaderboard</a><a href="#how">How it works</a><a href="#rules">Rules</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
   <div class="hr"><button class="bell" id="settingsBtn" aria-label="Open settings" aria-haspopup="dialog" aria-controls="settingsDlg" title="Settings" style="font-size:20px">⚙</button><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
 </header>
 <main id="top">
@@ -312,6 +326,18 @@ html,body{max-width:100%;overflow-x:clip}
   <div class="scroll"><table id="at"></table></div>
   <h3 style="font-size:20px;margin:24px 0 10px">Registrations</h3>
   <div class="scroll"><table id="ar"></table></div>
+  <h3 style="font-size:20px;margin:24px 0 10px">Leaderboard</h3>
+  <div id="lbAdmin">
+   <div class="form">
+    <label>Tournament name<input id="lb1" maxlength="40" list="lbT" placeholder="Night Rush"><datalist id="lbT"></datalist></label>
+    <label>Player name<input id="lb2" maxlength="24" placeholder="In-game name"></label>
+    <label>Rank<input id="lb3" type="number" min="1" value="1"></label>
+    <label>Kills<input id="lb4" type="number" min="0" value="0"></label>
+    <label>Prize money won (₹)<input id="lb5" type="number" min="0" value="0"></label>
+    <div class="full row"><p class="err" id="lbErr"></p><button class="btn" id="lbAdd" type="button">Publish to leaderboard</button></div>
+   </div>
+   <div class="scroll"><table id="lbAT"></table></div>
+  </div>
   <h3 style="font-size:20px;margin:24px 0 10px">Player suggestions</h3>
   <div id="adminSuggestions" class="meta">No suggestions yet.</div>
 </section>
@@ -352,11 +378,15 @@ html,body{max-width:100%;overflow-x:clip}
 <footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
 </div>
 
-<nav class="bottom-nav" aria-label="Main navigation">
+<nav class="bottom-nav three" aria-label="Main navigation">
   <a class="bottom-tab active" id="bottomTournaments" href="#scrims" aria-current="page">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     <span>Tournaments</span>
   </a>
+  <button class="bottom-tab" id="bottomLeaderboard" type="button" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v6a4 4 0 0 1-8 0z"/><path d="M8 6H4c0 3 1 5 4 5M16 6h4c0 3-1 5-4 5"/><path d="M12 14v4M8 21h8M9 18h6"/></svg>
+    <span>Leaderboard</span>
+  </button>
   <button class="bottom-tab" id="bottomProfile" type="button">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
     <span>Profile</span>
@@ -364,6 +394,12 @@ html,body{max-width:100%;overflow-x:clip}
 </nav>
 
 <dialog id="profileDlg"><div class="dlg" id="profileBody"></div></dialog>
+<dialog id="lbDlg" aria-label="Leaderboard"><div class="dlg">
+  <h3>Leaderboard</h3>
+  <p class="meta" style="margin:0">Winners, kills and prize money from completed tournaments.</p>
+  <div class="tabs" id="lbTabs"><button type="button" data-lb="t" aria-pressed="true">Tournament</button><button type="button" data-lb="p" aria-pressed="false">Profile</button></div>
+  <div id="lbBody"><div class="empty">Loading leaderboard…</div></div>
+</div></dialog>
 <dialog id="settingsDlg" aria-label="Player settings"><div class="dlg" id="settingsBody"></div></dialog>
 <dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
 <dialog id="ndlg"><div class="dlg" id="nbody"></div></dialog>
@@ -713,6 +749,44 @@ bottomProfile.onclick=()=>openPlayerProfile();
 bottomTournaments.addEventListener("click",()=>setBottomActive("tournaments"));
 $("profileDlg").addEventListener("close",()=>setBottomActive("tournaments"));
 $("profileDlg").addEventListener("cancel",()=>setBottomActive("tournaments"));
+
+// ===== Leaderboard (public read, admin write via "leaderboard" collection) =====
+let LB=[],lbView="t";
+const money=n=>"₹"+(Number(n)||0).toLocaleString("en-IN");
+function renderLB(){
+ const body=$("lbBody");if(!body)return;
+ $("lbTabs").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.lb===lbView)));
+ if(!LB.length){body.innerHTML='<div class="empty">No results published yet. Check back after the next tournament.</div>'}
+ else if(lbView==="t"){
+  const g={};LB.forEach(e=>{(g[e.tournament]=g[e.tournament]||{at:0,rows:[]});g[e.tournament].rows.push(e);g[e.tournament].at=Math.max(g[e.tournament].at,e.at||0)});
+  body.innerHTML=Object.entries(g).sort((a,b)=>b[1].at-a[1].at).map(([n,v])=>`<div class="lbcard"><h3>${esc(n)}</h3><div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Kills</th><th>Prize won</th></tr>${v.rows.sort((a,b)=>a.rank-b.rank).map(r=>`<tr><td class="rk">#${r.rank}</td><td>${esc(r.player)}</td><td>${r.kills}</td><td class="pz">${money(r.prize)}</td></tr>`).join("")}</table></div></div>`).join("");
+ }else{
+  const p={};LB.forEach(e=>{const k=e.player.toLowerCase();const o=p[k]||(p[k]={name:e.player,played:0,kills:0,prize:0,best:1e9});o.played++;o.kills+=e.kills;o.prize+=e.prize;o.best=Math.min(o.best,e.rank)});
+  const rows=Object.values(p).sort((a,b)=>b.prize-a.prize||b.kills-a.kills||a.best-b.best);
+  body.innerHTML=`<div class="lbcard"><div class="scroll"><table><tr><th>Rank</th><th>Name</th><th>Played</th><th>Kills</th><th>Best</th><th>Prize won</th></tr>${rows.map((r,i)=>`<tr><td class="rk">#${i+1}</td><td>${esc(r.name)}</td><td>${r.played}</td><td>${r.kills}</td><td>#${r.best}</td><td class="pz">${money(r.prize)}</td></tr>`).join("")}</table></div></div>`;
+ }
+ const dl=$("lbT");if(dl)dl.innerHTML=[...new Set(LB.map(e=>e.tournament))].map(n=>`<option value="${esc(n)}">`).join("");
+ const at=$("lbAT");if(at){at.innerHTML='<tr><th>Tournament</th><th>Player</th><th>Rank</th><th>Kills</th><th>Prize</th><th></th></tr>'+LB.map(e=>`<tr><td>${esc(e.tournament)}</td><td>${esc(e.player)}</td><td>${e.rank}</td><td>${e.kills}</td><td>${money(e.prize)}</td><td><button class="btn ghost sm" type="button" data-lbdel="${e.id}">Delete</button></td></tr>`).join("");
+  at.querySelectorAll("[data-lbdel]").forEach(b=>b.onclick=async()=>{if(!isAdmin||!confirm("Delete this entry?"))return;try{await deleteDoc(doc(db,"leaderboard",b.dataset.lbdel))}catch(e){$("lbErr").textContent="Could not delete entry."}})}
+}
+$("lbTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{lbView=b.dataset.lb;renderLB()});
+$("lbAdd").onclick=async()=>{
+ const tournament=$("lb1").value.trim(),player=$("lb2").value.trim(),rank=parseInt($("lb3").value,10),kills=parseInt($("lb4").value,10),prize=Number($("lb5").value);
+ if(!isAdmin)return $("lbErr").textContent="Admin login required.";
+ if(!tournament||!player)return $("lbErr").textContent="Enter tournament and player name.";
+ if(!(rank>=1)||!(kills>=0)||!(prize>=0))return $("lbErr").textContent="Rank, kills and prize must be valid numbers.";
+ try{await setDoc(doc(collection(db,"leaderboard")),{tournament,player,rank,kills,prize,at:Date.now()});$("lbErr").textContent="";$("lb2").value="";$("lb3").value=rank+1;$("lb4").value=0;$("lb5").value=0}
+ catch(e){$("lbErr").textContent="Could not publish. Check Firestore rules for the leaderboard collection."}
+};
+onSnapshot(collection(db,"leaderboard"),s=>{LB=s.docs.map(d=>({id:d.id,...d.data()})).filter(e=>e.tournament&&e.player).sort((a,b)=>(b.at||0)-(a.at||0));renderLB()},()=>{$("lbBody").innerHTML='<div class="empty">Leaderboard unavailable right now.</div>'});
+// Leaderboard opens in its own window, like Profile and Settings
+{const lbDlg=$("lbDlg"),bl=$("bottomLeaderboard");
+ const openLb=()=>{renderLB();bl.classList.add("active");bl.setAttribute("aria-current","page");bottomTournaments.classList.remove("active");bottomTournaments.removeAttribute("aria-current");lbDlg.showModal()};
+ const closed=()=>{bl.classList.remove("active");bl.removeAttribute("aria-current");if(!profileDlg.open){bottomTournaments.classList.add("active");bottomTournaments.setAttribute("aria-current","page")}};
+ bl.onclick=openLb;$("navLb").onclick=e=>{e.preventDefault();openLb()};
+ lbDlg.addEventListener("click",e=>{if(e.target===lbDlg)lbDlg.close()});
+ lbDlg.addEventListener("close",closed);lbDlg.addEventListener("cancel",closed);
+ bottomProfile.addEventListener("click",()=>{bl.classList.remove("active");bl.removeAttribute("aria-current")});}
 
 onAuthStateChanged(auth,u=>{
  if(!u){signInAnonymously(auth).catch(()=>{});return}
