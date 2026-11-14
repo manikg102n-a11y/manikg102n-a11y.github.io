@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#17090c"><link rel="icon" href="icon-192.png"><title>TF Tournaments – Free Fire Paid Scrims</title>
-<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
+<link rel="modulepreload" href="firebase-config.js">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Barlow:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Barlow:wght@400;500;600&display=swap"></noscript>
 <style>
 :root{--bg:#fff5f5;--panel:#fff;--panel2:#ffe5e5;--ink:#291012;--mute:#79585b;--flame:#dc1830;--gold:#b78325;--line:#efc6cb;--onflame:#fff;--ok:#16834a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17090c;--panel:#241014;--panel2:#35151c;--ink:#fff1f2;--mute:#c7a6aa;--flame:#ff2945;--gold:#ffc45c;--line:#59232d;--onflame:#fff;color-scheme:dark}}
@@ -303,6 +310,9 @@ const isBR=t=>!MODE[t.mode]||MODE[t.mode].g==="br";
 const slotTag=(t,i)=>isBR(t)||i>25?String(i+1):String.fromCharCode(65+i);
 const slotName=(t,i)=>(isBR(t)?"Slot ":"Team ")+slotTag(t,i);
 let T=[],J=[],V=new Set(),R=[],SUG=[],mode="all",isAdmin=false,db=fdb,mine={},adminUnsubs=[];
+let loadedT=false;
+try{const c=JSON.parse(localStorage.getItem("tf_cache")||"null");if(c&&c.t&&Date.now()-c.at<6048e5){T=c.t;J=c.j||[]}}catch(e){}
+function saveCache(){try{localStorage.setItem("tf_cache",JSON.stringify({t:T,j:J,at:Date.now()}))}catch(e){}}
 try{mine=JSON.parse(localStorage.getItem("tf_regs")||"{}")}catch(e){}
 const fmt=d=>new Date(d).toLocaleString([], {weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -336,7 +346,7 @@ function render(){
   const ts=list.filter(t=>MODE[t.mode].g===g[0]);
   if(!ts.length)return cat==="all"?"":`<div class="empty">No ${g[1]} matches right now. Check back soon.</div>`;
   return `<div class="sec"><h3 class="sh">${g[1]}</h3><p class="sub2">${g[2]}</p><div class="grid">${ts.map(card).join("")}</div></div>`}).join("");
- $("list").innerHTML=parts||`<div class="empty">${db?"No tournaments right now. Check back soon.":"Live tournaments load when you open this page."}</div>`;
+ $("list").innerHTML=parts||`<div class="empty">${loadedT?"No tournaments right now. Check back soon.":"Loading tournaments…"}</div>`;
  $("list").querySelectorAll("button[data-details]").forEach(b=>b.onclick=()=>showTournamentDetails(b.dataset.details));
  $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
  $("list").querySelectorAll("button[data-join-help]").forEach(b=>b.onclick=()=>showJoinHelp(b.dataset.joinHelp));
@@ -555,8 +565,8 @@ async function submit(c){
 dlg.addEventListener("click",e=>{if(e.target===dlg)close()});
 
 render();tick();
-onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));render();syncWatch()},()=>{});
-onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{});
+onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));loadedT=true;render();syncWatch();saveCache()},()=>{});
+onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));render();saveCache()},()=>{});
 function setAdmin(on){
  isAdmin=on;$("admin").hidden=!on;$("navAdmin").hidden=!on;$("navOut").hidden=!on;$("alogin").hidden=on;
  adminUnsubs.forEach(u=>u());adminUnsubs=[];
