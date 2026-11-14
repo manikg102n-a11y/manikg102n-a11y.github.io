@@ -411,33 +411,33 @@ async function roomDialog(tid){
  if(!dlg.open)dlg.showModal();
 }
 function showJoinHelp(mode){
- const isSolo=mode==="solo",isDuo=mode==="duo",isSquad=mode==="squad";
- const title=isSolo?"Solo":isDuo?"Duo":isSquad?"Squad (4)":(MODES[mode]||mode);
+ const sz=(MODE[mode]&&MODE[mode].seats)||1,isSolo=sz===1,isDuo=sz===2,isSquad=sz>=4;
+ const title=MODES[mode]||mode;
  const steps=isSolo?[
-  "Tap <b>Join</b> on the Solo tournament you want to enter.",
-  "Choose an available Solo slot.",
+  "Tap <b>Join</b> on the tournament you want to enter.",
+  "Choose an available slot.",
   "Enter your <b>UID</b>, <b>In-Game Name</b> and <b>Contact number</b>.",
   "Tap <b>Continue to payment</b>. The next screen shows the entry amount.",
   "Tap <b>Open UPI app</b> and pay the displayed entry fee.",
   "Return to this page and enter the <b>UPI ID you paid from</b>.",
   "Tap <b>Submit for verification</b>. Your registration code/reference ID will appear—save it."
  ]:isDuo?[
-  "Tap <b>Join</b> on the Duo tournament.",
-  "Choose the Duo team slot you and your teammate want to join. A Duo slot has <b>2 player seats</b>.",
+  "Tap <b>Join</b> on the tournament.",
+  "Choose the team slot you and your teammate want to join. A slot has <b>2 player seats</b>.",
   "Player 1 enters their own <b>UID</b>, <b>In-Game Name</b> and <b>Contact number</b>, then taps <b>Continue to payment</b>.",
   "Player 1 pays the displayed entry fee using <b>Open UPI app</b>, returns to the page, enters the UPI ID they paid from and taps <b>Submit for verification</b>. Save the reference ID shown.",
-  "Player 2 repeats the same Join process, but must choose the <b>same Duo team slot</b> while its second seat is still open. Player 2 enters their own details, pays their own displayed entry fee, enters their own payer UPI ID and submits.",
-  "When both player seats are filled, the Duo team is complete. Each player has their own registration and reference ID."
+  "Player 2 repeats the same Join process, but must choose the <b>same team slot</b> while its second seat is still open. Player 2 enters their own details, pays their own displayed entry fee, enters their own payer UPI ID and submits.",
+  "When both player seats are filled, the team is complete. Each player has their own registration and reference ID."
  ]:[
-  "Tap <b>Join</b> on the Squad tournament.",
-  "Choose the Squad team slot you and your teammates want to join. A Squad slot has <b>4 player seats</b>.",
+  "Tap <b>Join</b> on the tournament.",
+  "Choose the team slot you and your teammates want to join. A slot has <b>4 player seats</b>.",
   "Player 1 enters their own <b>UID</b>, <b>In-Game Name</b> and <b>Contact number</b>, then taps <b>Continue to payment</b>.",
   "Player 1 pays the displayed entry fee using <b>Open UPI app</b>, returns to the page, enters the UPI ID they paid from and taps <b>Submit for verification</b>. Save the reference ID shown.",
-  "Players 2, 3 and 4 each repeat the same process, choosing the <b>same Squad team slot</b> while seats are available. Each player enters their own details, pays their own displayed entry fee, enters their own payer UPI ID and submits.",
-  "When all 4 player seats are filled, the Squad team is complete. Each player has their own registration and reference ID."
+  "Players 2, 3 and 4 each repeat the same process, choosing the <b>same team slot</b> while seats are available. Each player enters their own details, pays their own displayed entry fee, enters their own payer UPI ID and submits.",
+  "When all 4 player seats are filled, the team is complete. Each player has their own registration and reference ID."
  ];
  const d=$("joinHelpDlg"),b=$("joinHelpBody");
- b.innerHTML='<h3>How to join · '+esc(title)+'</h3><div class="help-mode"><h4>'+(isSolo?'Solo · 1 player':isDuo?'Duo · 2 players in one team':'Squad · 4 players in one team')+'</h4><ol class="help-steps">'+steps.map(x=>'<li>'+x+'</li>').join('')+'</ol></div><p class="meta">Important: Your registration stays <b>Pending</b> until an admin verifies the payment. The room details become available only after verification. For Duo and Squad, every teammate must complete their own registration and payment in the same team slot.</p><div class="acts"><button class="btn" type="button" id="closeJoinHelp">Got it</button></div>';
+ b.innerHTML='<h3>How to join · '+esc(title)+'</h3><div class="help-mode"><h4>'+(isSolo?'1 player':isDuo?'2 players in one team':'4 players in one team')+'</h4><ol class="help-steps">'+steps.map(x=>'<li>'+x+'</li>').join('')+'</ol></div><p class="meta">Important: Your registration stays <b>Pending</b> until an admin verifies the payment. The room details become available only after verification. For Duo and Squad, every teammate must complete their own registration and payment in the same team slot.</p><div class="acts"><button class="btn" type="button" id="closeJoinHelp">Got it</button></div>';
  $("closeJoinHelp").onclick=()=>d.close();
  if(!d.open)d.showModal();
 }
@@ -460,14 +460,14 @@ function pick(c){
   tiles+=`<button type="button" class="tile ${free<=0?"full":k?"part":""} ${c.slot===i?"sel":""}" data-s="${i}" ${free<=0?"disabled":""}><b>${slotTag(t,i)}</b><span>${per===1?(free?"open":"taken"):free+"/"+per+" free"}</span></button>`}
  body.innerHTML=`<h3>Pick your ${isBR(t)?"slot":"team"}</h3><div class="meta">${esc(t.name)} · ${MODES[t.mode]} · Entry ₹${t.fee}${isBR(t)?(per>1?"<br>Take an empty slot, or join an open seat in another team.":""):(per>1?"<br>Choose a team. Friends can join the same team.":"<br>Choose your side.")}</div>
  <div class="tiles">${tiles}</div><div class="meta" id="si">${slotInfo(c)}</div><p class="err" id="e">${esc(c.msg||"")}</p>
- <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>Continue</button></div>`;
+ <div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n" ${c.slot==null?"disabled":""}>${c.paid?"Confirm this slot":"Continue"}</button></div>`;
  body.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
   c.slot=+b.dataset.s;c.msg="";
   body.querySelectorAll(".tile").forEach(x=>x.classList.toggle("sel",x===b));
   $("si").innerHTML=slotInfo(c);$("e").textContent="";$("n").disabled=false;
  });
  $("c").onclick=close;
- $("n").onclick=()=>details(c);
+ $("n").onclick=()=>{if(c.v&&c.paid&&c.payerUpi)submit(c);else details(c)};
 }
 function details(c){
  const t=c.t,v=c.v||{};
@@ -518,6 +518,7 @@ function pay(c){
    return;
   }
   c.payerUpi=x;
+  c.paid=true;
   c.paymentSubmittedAt=Date.now();
   submit(c);
  };
