@@ -1368,7 +1368,7 @@ function watchRoom(tid){
 }
 function schedule(tid){
  clearTimeout(timers[tid]);
- const t=T.find(x=>x.id===tid);if(!t||!ACC.has(tid)||t.start<=Date.now())return;
+ const t=T.find(x=>x.id===tid);if(!t||!ACC.has(tid)||t.start+3*3600e3<=Date.now())return;
  const ms=t.start-600000-Date.now();
  if(ms<=0){remind(tid);watchRoom(tid)}
  else timers[tid]=setTimeout(()=>{remind(tid);watchRoom(tid)},ms+1000);
