@@ -439,6 +439,9 @@ const seatsOf=t=>(MODE[t.mode]&&MODE[t.mode].seats)||1;
 const joinsOf=id=>J.filter(j=>j.tid===id&&Number.isInteger(j.slot));
 const taken=id=>joinsOf(id).length;
 const slotJoins=(id,sl)=>joinsOf(id).filter(j=>j.slot===sl);
+const slotTeam=(id,sl)=>{const j=slotJoins(id,sl).filter(x=>x.team).sort((a,b)=>(a.seat||0)-(b.seat||0))[0];return j?j.team:""};
+const ROLES=["Rusher","Sniper","Supporter","Bomber","Scout","Leader (IGL)","All-rounder"];
+const roleOptions=cur=>`<option value="">Not set</option>`+ROLES.map(r=>`<option value="${esc(r)}"${r===cur?" selected":""}>${esc(r)}</option>`).join("");
 const myList=id=>{const m=mine[id];return !m?[]:Array.isArray(m)?m:[{c:m,s:-1}]};
 const upcoming=()=>T.filter(t=>t.start>Date.now()).sort((a,b)=>a.start-b.start);
 
@@ -491,7 +494,7 @@ function renderAdmin(){
  $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
  const tm=Object.fromEntries(T.map(t=>[t.id,t]));
  const sh=$("adminSuggestions");if(sh)sh.innerHTML=SUG.length?SUG.map(x=>`<div class="suggestion-card"><b>${esc(x.email||"Player")}</b><small style="display:block;color:var(--mute)">${x.createdAt?fmt(x.createdAt):"Just now"}</small><p>${esc(x.message||"")}</p></div>`).join(""):`<p class="meta">No suggestions yet.</p>`;
- $("ar").innerHTML=`<tr><th>Tournament / Fee</th><th>Slot</th><th>Player</th><th>UID</th><th>WhatsApp</th><th>Payer UPI ID</th><th>Payment status</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1,paid=V.has(r.id);return `<tr><td>${esc(t?t.name:"(deleted)")}<br><small>₹${Number(t?.fee)||0}</small></td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi||"–")}<br><small>Submitted: ${r.paymentSubmittedAt?fmt(r.paymentSubmittedAt):"unknown"}</small></td><td><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" style="width:auto" data-v="${r.id}" ${paid?"checked":""} aria-label="Manually verify payment"><span>${paid?"Verified":"Pending"}</span></label></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="8">No registrations yet.</td></tr>`);
+ $("ar").innerHTML=`<tr><th>Tournament / Fee</th><th>Slot</th><th>Player</th><th>Team</th><th>Role</th><th>UID</th><th>WhatsApp</th><th>Payer UPI ID</th><th>Payment status</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1,paid=V.has(r.id);return `<tr><td>${esc(t?t.name:"(deleted)")}<br><small>₹${Number(t?.fee)||0}</small></td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.team||"–")}</td><td>${esc(r.role||"–")}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi||"–")}<br><small>Submitted: ${r.paymentSubmittedAt?fmt(r.paymentSubmittedAt):"unknown"}</small></td><td><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" style="width:auto" data-v="${r.id}" ${paid?"checked":""} aria-label="Manually verify payment"><span>${paid?"Verified":"Pending"}</span></label></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="10">No registrations yet.</td></tr>`);
  $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{
   const r=R.find(y=>y.id===c.dataset.v);if(!r)return;
   const bt=writeBatch(db),vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
@@ -529,7 +532,7 @@ function renderJoinedPlayers(id){
  if(!entries.length){host.innerHTML='<p class="meta">No players have joined this tournament yet.</p>';return;}
  const groups=new Map();
  entries.forEach(j=>{if(!groups.has(j.slot))groups.set(j.slot,[]);groups.get(j.slot).push(j)});
- host.innerHTML=[...groups.entries()].map(([slot,players])=>`<div style="padding:10px 0;border-top:1px solid var(--line)"><b>${esc(slotName(t,slot))}</b><div style="display:grid;gap:7px;margin-top:7px">${players.map(j=>`<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span>${esc(j.ign||"Player")}${per>1?` <span class="meta">· Seat ${Number(j.seat)+1}</span>`:""}</span></div>`).join("")}</div></div>`).join("");
+ host.innerHTML=[...groups.entries()].map(([slot,players])=>`<div style="padding:10px 0;border-top:1px solid var(--line)"><b>${esc(slotName(t,slot))}</b>${(players.find(p=>p.team)||{}).team?` <span class="meta">· ${esc(players.find(p=>p.team).team)}</span>`:""}<div style="display:grid;gap:7px;margin-top:7px">${players.map(j=>`<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span>${esc(j.ign||"Player")}${j.role?` <span class="tag">${esc(j.role)}</span>`:""}${per>1?` <span class="meta">· Seat ${Number(j.seat)+1}</span>`:""}</span></div>`).join("")}</div></div>`).join("");
 }
 function showTournamentDetails(id){
  const t=T.find(x=>x.id===id);
@@ -595,14 +598,14 @@ function openJoin(id){
  const t=T.find(x=>x.id===id);if(!t||taken(id)>=t.slots*seatsOf(t))return;
  // Never carry a saved payer UPI ID or payment state into a new registration.
  // Every registration must go through the payment screen again.
- pick({t,slot:null,v:{ign:playerProfile.ign||"",uid:playerProfile.uid||"",phone:playerProfile.phone||""},payerUpi:"",paymentOpened:false});
+ pick({t,slot:null,v:{ign:playerProfile.ign||"",uid:playerProfile.uid||"",phone:playerProfile.phone||"",role:playerProfile.role||""},payerUpi:"",paymentOpened:false});
  if(!dlg.open)dlg.showModal();
 }
 function slotInfo(c){
  if(c.slot==null)return isBR(c.t)?"Tap a slot to choose it.":"Tap a team to choose it.";
  const t=c.t,per=seatsOf(t),js=slotJoins(t.id,c.slot),free=per-js.length;
  if(per===1)return slotName(t,c.slot)+" selected.";
- return slotName(t,c.slot)+": "+(js.length?esc(js.map(j=>j.ign).join(", "))+" · ":"empty · ")+free+" seat"+(free>1?"s":"")+" free";
+ return slotName(t,c.slot)+(slotTeam(t.id,c.slot)?" ("+esc(slotTeam(t.id,c.slot))+")":"")+": "+(js.length?esc(js.map(j=>j.ign).join(", "))+" · ":"empty · ")+free+" seat"+(free>1?"s":"")+" free";
 }
 function pick(c){
  const t=c.t,per=seatsOf(t);let tiles="";
@@ -625,11 +628,13 @@ function details(c){
  <label>In-game name<input id="f2" maxlength="24" autocomplete="off" value="${esc(v.ign||"")}"></label>
  <label>Free Fire UID<input id="f3" inputmode="numeric" maxlength="12" autocomplete="off" value="${esc(v.uid||"")}"></label>
  <label>WhatsApp number<input id="f4" inputmode="tel" maxlength="15" autocomplete="tel" value="${esc(v.phone||"")}"></label>
+ <label>Your role<select id="f6">${roleOptions(v.role||"")}</select></label>
+ ${seatsOf(t)>1?(slotTeam(t.id,c.slot)?`<div class="meta">Team name: <b>${esc(slotTeam(t.id,c.slot))}</b></div>`:`<label>Team name (optional)<input id="f5" maxlength="24" autocomplete="off" value="${esc(v.team||"")}"></label>`):""}
  <p class="err" id="e"></p>
  <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="n">Continue to payment</button></div>`;
  $("b").onclick=()=>pick(c);
  $("n").onclick=()=>{
-  const v={ign:$("f2").value.trim(),uid:$("f3").value.trim(),phone:$("f4").value.trim().replace(/\s/g,"")};
+  const v={ign:$("f2").value.trim(),uid:$("f3").value.trim(),phone:$("f4").value.trim().replace(/\s/g,""),role:$("f6").value,team:slotTeam(t.id,c.slot)||($("f5")?$("f5").value.trim().slice(0,24):"")};
   if(!v.ign)return $("e").textContent="Enter your in-game name.";
   if(!/^\d{8,12}$/.test(v.uid))return $("e").textContent="UID should be 8 to 12 digits.";
   if(!/^\+?\d{10,14}$/.test(v.phone))return $("e").textContent="Enter a valid WhatsApp number.";
@@ -682,12 +687,12 @@ async function submit(c){
  for(let seat=0;seat<per&&got==null;seat++){
   if(used.has(seat))continue;
   const rid=t.id+"_"+v.uid,jid=`${t.id}_s${c.slot}_p${seat}`,bt=writeBatch(db);
-  bt.set(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,slot:c.slot,seat,jid,ign:v.ign,uid:v.uid,phone:v.phone,upi:c.payerUpi,paymentStatus:"pending",paymentSubmittedAt:c.paymentSubmittedAt||Date.now(),at:Date.now()});
-  bt.set(doc(db,"joins",jid),{tid:t.id,slot:c.slot,seat,ign:v.ign});
+  bt.set(doc(db,"registrations",rid),{owner:auth.currentUser.uid,tid:t.id,slot:c.slot,seat,jid,ign:v.ign,uid:v.uid,phone:v.phone,team:v.team||"",role:v.role||"",upi:c.payerUpi,paymentStatus:"pending",paymentSubmittedAt:c.paymentSubmittedAt||Date.now(),at:Date.now()});
+  const pub={tid:t.id,slot:c.slot,seat,ign:v.ign};if(v.team)pub.team=v.team;if(v.role)pub.role=v.role;bt.set(doc(db,"joins",jid),pub);
   try{await bt.commit();got=seat}catch(err){if(err.code!=="permission-denied")return pick(Object.assign(c,{msg:"Could not register. Check your connection and try again."}))}
  }
  if(got==null)return pick(Object.assign(c,{msg:"That slot just filled up, or this UID is already registered for this tournament. Pick another slot."}));
- if(auth.currentUser?.email){playerProfile={...playerProfile,...v,upi:c.payerUpi,email:auth.currentUser.email};setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true}).catch(()=>{});}
+ if(auth.currentUser?.email){playerProfile={...playerProfile,ign:v.ign,uid:v.uid,phone:v.phone,role:playerProfile.role||v.role||"",upi:c.payerUpi,email:auth.currentUser.email};setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true}).catch(()=>{});}
  const code="TF-"+Math.random().toString(36).slice(2,6).toUpperCase();
  const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot});mine[t.id]=l;
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
@@ -722,10 +727,10 @@ function profileScreen(message=""){
  const signed=!!auth.currentUser?.email;
  profileBody.innerHTML=`<h3>Player profile</h3>
  <p class="meta" style="margin:0">${signed?`Signed in as ${esc(auth.currentUser.email)}`:"Create an account or sign in to save your player profile and view your registration history."}</p>
- ${signed?`<label>In-game name<input id="pIgn" maxlength="24" value="${esc(playerProfile.ign||"")}"></label><label>Free Fire UID<input id="pUid" inputmode="numeric" maxlength="12" value="${esc(playerProfile.uid||"")}"></label><label>WhatsApp number<input id="pPhone" inputmode="tel" maxlength="15" value="${esc(playerProfile.phone||"")}"></label><label>UPI ID (private)<input id="pUpi" maxlength="100" value="${esc(playerProfile.upi||"")}"></label><div class="sec"><h3 class="sh">My registrations</h3><div id="myHistory" class="meta">Loading history…</div></div>`:`<label>Email<input id="pEmail" type="email" autocomplete="email" required></label><label>Password<input id="pPass" type="password" minlength="6" autocomplete="new-password" required></label><p class="meta" style="margin:0">New players: Create account. Existing players: Sign in. Use at least 6 characters for a new password.</p>`}
+ ${signed?`<label>In-game name<input id="pIgn" maxlength="24" value="${esc(playerProfile.ign||"")}"></label><label>Free Fire UID<input id="pUid" inputmode="numeric" maxlength="12" value="${esc(playerProfile.uid||"")}"></label><label>Preferred role<select id="pRole">${roleOptions(playerProfile.role||"")}</select></label><label>WhatsApp number<input id="pPhone" inputmode="tel" maxlength="15" value="${esc(playerProfile.phone||"")}"></label><label>UPI ID (private)<input id="pUpi" maxlength="100" value="${esc(playerProfile.upi||"")}"></label><div class="sec"><h3 class="sh">My registrations</h3><div id="myHistory" class="meta">Loading history…</div></div>`:`<label>Email<input id="pEmail" type="email" autocomplete="email" required></label><label>Password<input id="pPass" type="password" minlength="6" autocomplete="new-password" required></label><p class="meta" style="margin:0">New players: Create account. Existing players: Sign in. Use at least 6 characters for a new password.</p>`}
  <p class="err" id="pErr">${esc(message)}</p><div class="acts">${signed?`<button class="btn" id="pSave" type="button">Save profile</button>`:`<button class="btn ghost" id="pCancel" type="button">Cancel</button><button class="btn ghost" id="pLogin" type="button">Sign in</button><button class="btn" id="pCreate" type="button">Create account</button>`}</div>`;
  if(!signed){$("pCancel").onclick=()=>profileDlg.close();$("pLogin").onclick=()=>playerAuth(false);$("pCreate").onclick=()=>playerAuth(true);return;}
- $("pSave").onclick=async()=>{const ign=$("pIgn").value.trim(),uid=$("pUid").value.trim(),phone=$("pPhone").value.trim().replace(/\s/g,""),upi=$("pUpi").value.trim();if(uid&&!/^\d{8,12}$/.test(uid))return $("pErr").textContent="Free Fire UID should be 8 to 12 digits.";if(phone&&!/^\+?\d{10,14}$/.test(phone))return $("pErr").textContent="Enter a valid WhatsApp number.";if(upi&&!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(upi))return $("pErr").textContent="Enter a valid UPI ID.";playerProfile={ign,uid,phone,upi,email:auth.currentUser.email};try{await setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true});$("pErr").textContent="Profile saved."}catch(e){$("pErr").textContent="Could not save profile. Firestore profile permissions may need updating."}};
+ $("pSave").onclick=async()=>{const ign=$("pIgn").value.trim(),role=$("pRole").value,uid=$("pUid").value.trim(),phone=$("pPhone").value.trim().replace(/\s/g,""),upi=$("pUpi").value.trim();if(uid&&!/^\d{8,12}$/.test(uid))return $("pErr").textContent="Free Fire UID should be 8 to 12 digits.";if(phone&&!/^\+?\d{10,14}$/.test(phone))return $("pErr").textContent="Enter a valid WhatsApp number.";if(upi&&!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(upi))return $("pErr").textContent="Enter a valid UPI ID.";playerProfile={ign,uid,phone,role,upi,email:auth.currentUser.email};try{await setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true});$("pErr").textContent="Profile saved."}catch(e){$("pErr").textContent="Could not save profile. Firestore profile permissions may need updating."}};
  showPlayerHistory();
 }
 async function showPlayerHistory(){const host=$("myHistory");if(!host||!auth.currentUser?.email)return;try{const q=query(collection(db,"registrations"),where("owner","==",auth.currentUser.uid));const snap=await getDocs(q);if(!snap.size){host.textContent="No registrations found for this account yet.";return;}host.innerHTML=snap.docs.map(d=>{const r=d.data(),t=T.find(x=>x.id===r.tid);return `<div class="nt" style="margin:8px 0"><b class="t">${esc(t?.name||"Tournament")}</b><p>${esc(r.ign||"")} · ${esc(r.uid||"")} · ${Number.isInteger(r.slot)?"Slot "+(r.slot+1):"Registered"}</p><p>Registration date: ${r.at?new Date(r.at).toLocaleString():"Unknown"}</p></div>`}).join("")}catch(e){host.textContent="Could not load history. Your Firestore rules may need to allow players to read their own registrations."}}
