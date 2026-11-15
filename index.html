@@ -535,7 +535,7 @@ const myList=id=>{const m=mine[id];return !m?[]:Array.isArray(m)?m:[{c:m,s:-1}]}
 const upcoming=()=>T.filter(t=>t.start>Date.now()).sort((a,b)=>a.start-b.start);
 
 // ===== Player experience upgrades: state, language, feedback =====
-const ACC=new Set(),ACCKNOWN=new Set(),ROOM={},watching={},timers={},roomUn={},retries={};
+const ACC=new Set(),ACCKNOWN=new Set(),ROOM={},watching={},timers={},roomUn={},retries={},pollT={};
 let LB=[],lbView="t";
 const money=n=>"₹"+(Number(n)||0).toLocaleString("en-IN");
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}};
@@ -824,7 +824,7 @@ async function rateMatch(tid,n){
 function bookStage(t){
  if(!ACCKNOWN.has(t.id))return -1;
  if(!ACC.has(t.id))return 0;
- if(ROOM[t.id]&&ROOM[t.id].id&&t.start-600000<=Date.now())return 2;
+ if(ROOM[t.id]&&ROOM[t.id].id)return 2;
  return 1;
 }
 function bookingList(){
@@ -1364,19 +1364,20 @@ function watchRoom(tid){
   if(sn.exists()){ROOM[tid]=sn.data();const t=T.find(x=>x.id===tid);
    note("room:"+tid+":"+ROOM[tid].id,"Room ready",(t?t.name+". ":"")+"Room ID "+ROOM[tid].id+(ROOM[tid].pass?", password "+ROOM[tid].pass:""),"room")}
   renderNotes();renderBookings();
- },()=>{roomUn[tid]=null;retries[tid]=(retries[tid]||0)+1;if(retries[tid]<200)setTimeout(()=>watchRoom(tid),Math.min(60000,5000*retries[tid]))});
+ },()=>{roomUn[tid]=null;retries[tid]=(retries[tid]||0)+1;if(retries[tid]<200)setTimeout(()=>watchRoom(tid),Math.min(15000,3000*retries[tid]))});
 }
 function schedule(tid){
  clearTimeout(timers[tid]);
  const t=T.find(x=>x.id===tid);if(!t||!ACC.has(tid)||t.start+3*3600e3<=Date.now())return;
  const ms=t.start-600000-Date.now();
- if(ms<=0){remind(tid);watchRoom(tid)}
- else timers[tid]=setTimeout(()=>{remind(tid);watchRoom(tid)},ms+1000);
+ watchRoom(tid);
+ if(ms<=0){remind(tid)}
+ else timers[tid]=setTimeout(()=>{remind(tid)},ms+1000);
 }
 function resetWatch(){
  Object.values(watching).forEach(u=>u&&u());Object.keys(watching).forEach(k=>delete watching[k]);
  Object.values(roomUn).forEach(u=>u&&u());Object.keys(roomUn).forEach(k=>delete roomUn[k]);
- Object.keys(ROOM).forEach(k=>delete ROOM[k]);ACC.clear();
+ Object.keys(ROOM).forEach(k=>delete ROOM[k]);Object.keys(pollT).forEach(k=>{clearInterval(pollT[k]);delete pollT[k]});ACC.clear();ACCKNOWN.clear();
 }
 let regsLoaded=null;
 function restoreMine(u){
@@ -1393,11 +1394,19 @@ function syncWatch(){
  restoreMine(u);
  Object.keys(mine).forEach(tid=>{
   if(watching[tid]||!T.some(x=>x.id===tid)||!myList(tid).length)return;
-  watching[tid]=onSnapshot(doc(db,"access",u.uid+"_"+tid),sn=>{
+  const applyAcc=exists=>{
    ACCKNOWN.add(tid);
-   if(sn.exists()){ACC.add(tid);const tt=T.find(x=>x.id===tid);if(tt&&tt.start+3*3600e3>Date.now())note("conf:"+tid,tr("tConfirmed"),tt.name+" is confirmed. We’ll share the room ID 10 minutes before the match.","confirmed")}else ACC.delete(tid);
+   if(exists){const was=ACC.has(tid);ACC.add(tid);const tt=T.find(x=>x.id===tid);if(tt&&tt.start+3*3600e3>Date.now())note("conf:"+tid,tr("tConfirmed"),tt.name+" is confirmed. Room details will appear here as soon as the admin publishes them.","confirmed");if(!was)watchRoom(tid)}else ACC.delete(tid);
    schedule(tid);if(ACC.has(tid))watchRoom(tid);renderNotes();renderBookings();
-  },()=>{watching[tid]=null;retries["a"+tid]=(retries["a"+tid]||0)+1;if(retries["a"+tid]<40)setTimeout(syncWatch,10000)});
+  };
+  const aref=doc(db,"access",u.uid+"_"+tid);
+  watching[tid]=onSnapshot(aref,sn=>{if(pollT[tid]){clearInterval(pollT[tid]);pollT[tid]=null}applyAcc(sn.exists())},err=>{
+   console.warn("access listener failed",tid,err&&err.code);
+   watching[tid]=null;
+   // Fallback: poll every 4s so the card still updates
+   if(!pollT[tid])pollT[tid]=setInterval(()=>{getDoc(aref).then(sn=>applyAcc(sn.exists())).catch(e=>{console.warn("access poll failed",e&&e.code);ACCKNOWN.add(tid);renderBookings()})},4000);
+   getDoc(aref).then(sn=>applyAcc(sn.exists())).catch(()=>{ACCKNOWN.add(tid);renderBookings()});
+  });
  });
 }
 function renderNotes(){
@@ -1414,7 +1423,7 @@ function renderNotes(){
   const at=new Date(t.start-600000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
   let st;
   if(!ACC.has(tid))st="Waiting for payment confirmation. You will be notified once it is marked paid.";
-  else if(inWin&&ROOM[tid])st=`Payment confirmed. Room ID: <b>${esc(ROOM[tid].id)}</b>${ROOM[tid].pass?` · Password: <b>${esc(ROOM[tid].pass)}</b>`:""}`;
+  else if(ROOM[tid]&&ROOM[tid].id)st=`Payment confirmed. Room ID: <b>${esc(ROOM[tid].id)}</b>${ROOM[tid].pass?` · Password: <b>${esc(ROOM[tid].pass)}</b>`:""}`;
   else if(t.start<=now)st="Payment confirmed. This match has started.";
   else if(!inWin)st=`Payment confirmed. The room ID appears here at ${at}, 10 minutes before the match.`;
   else st="Payment confirmed. The match starts soon. Waiting for the room details.";
