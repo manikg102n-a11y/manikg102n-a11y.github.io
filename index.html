@@ -403,6 +403,7 @@ html,body{max-width:100%;overflow-x:clip}
   <h3 style="font-size:20px;margin:24px 0 10px">Your tournaments</h3>
   <div class="scroll"><table id="at"></table></div>
   <h3 style="font-size:20px;margin:24px 0 10px">Registrations</h3>
+  <div class="acts" style="justify-content:flex-start;flex-wrap:wrap;gap:8px;margin:8px 0"><select id="arT" aria-label="Filter by tournament" style="width:auto"></select><button class="btn ghost sm" type="button" id="arConf">Confirm all shown</button><button class="btn ghost sm" type="button" id="arRoom">Room access: all confirmed</button><button class="btn ghost sm" type="button" id="arRoomOff">Room access: remove all</button></div>
   <div class="scroll"><table id="ar"></table></div>
   <h3 style="font-size:20px;margin:24px 0 10px">Leaderboard</h3>
   <div id="lbAdmin">
@@ -517,7 +518,7 @@ const prizeText=t=>{const p=String(t.prize??"").trim();return /^\d+(\.\d+)?$/.te
 const isBR=t=>!MODE[t.mode]||MODE[t.mode].g==="br";
 const slotTag=(t,i)=>isBR(t)||i>25?String(i+1):String.fromCharCode(65+i);
 const slotName=(t,i)=>(isBR(t)?"Slot ":"Team ")+slotTag(t,i);
-let T=[],J=[],V=new Set(),R=[],SUG=[],mode="all",isAdmin=false,db=fdb,mine={},adminUnsubs=[],activeDetailsId=null;
+let T=[],J=[],V=new Set(),RO=new Set(),arTid="all",R=[],SUG=[],mode="all",isAdmin=false,db=fdb,mine={},adminUnsubs=[],activeDetailsId=null;
 let loadedT=false;
 try{const c=JSON.parse(localStorage.getItem("tf_cache")||"null");if(c&&c.t&&Date.now()-c.at<6048e5){T=c.t;J=c.j||[]}}catch(e){}
 function saveCache(){try{localStorage.setItem("tf_cache",JSON.stringify({t:T,j:J,at:Date.now()}))}catch(e){}}
@@ -535,7 +536,7 @@ const myList=id=>{const m=mine[id];return !m?[]:Array.isArray(m)?m:[{c:m,s:-1}]}
 const upcoming=()=>T.filter(t=>t.start>Date.now()).sort((a,b)=>a.start-b.start);
 
 // ===== Player experience upgrades: state, language, feedback =====
-const ACC=new Set(),ACCKNOWN=new Set(),ROOM={},watching={},timers={},roomUn={},retries={},pollT={};
+const RACC=new Set(),watchingR={},ACC=new Set(),ACCKNOWN=new Set(),ROOM={},watching={},timers={},roomUn={},retries={},pollT={},ACCERR={};
 let LB=[],lbView="t";
 const money=n=>"₹"+(Number(n)||0).toLocaleString("en-IN");
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}};
@@ -557,7 +558,7 @@ const I18N={
   myBookings:"My bookings",slot:"Slot",team:"Team",role:"Role",status:"Status",startsIn:"Starts in",started:"Match started",
   st0:"Pending payment verification",st1:"Confirmed",st2:"Room ready",checking:"Checking status…",
   stepPending:"Pending",stepConfirmed:"Confirmed",stepRoom:"Room ready",roomId:"Room ID",password:"Password",
-  roomSoon:"Room ID appears here 10 minutes before the match.",payWait:"An admin is checking your payment. You will get an alert when it is confirmed.",
+  roomSoon:"The admin will share the Room ID here.",payWait:"An admin is checking your payment. You will get an alert when it is confirmed.",
   viewLb:"View leaderboard",
   emptySearch:q=>"No tournaments match “"+esc(q)+"”. Try a shorter name or clear the search.",clearSearch:"Clear search",
   emptyEnded:"No ended matches yet. Results will appear here after the first match finishes.",seeUpcoming:"See upcoming matches",
@@ -595,7 +596,7 @@ const I18N={
   myBookings:"Meri bookings",slot:"Slot",team:"Team",role:"Role",status:"Status",startsIn:"Shuru hone mein",started:"Match shuru ho gaya",
   st0:"Payment verification baaki hai",st1:"Confirmed",st2:"Room ready",checking:"Status check ho raha hai…",
   stepPending:"Pending",stepConfirmed:"Confirmed",stepRoom:"Room ready",roomId:"Room ID",password:"Password",
-  roomSoon:"Room ID match se 10 minute pehle yahan dikhega.",payWait:"Admin aapka payment check kar raha hai. Confirm hote hi alert milega.",
+  roomSoon:"Admin Room ID yahan share karega.",payWait:"Admin aapka payment check kar raha hai. Confirm hote hi alert milega.",
   viewLb:"Leaderboard dekho",
   emptySearch:q=>"“"+esc(q)+"” se koi tournament nahi mila. Chhota naam try karo ya search clear karo.",clearSearch:"Search clear karo",
   emptyEnded:"Abhi koi khatam hua match nahi hai. Pehla match khatam hote hi results yahan aayenge.",seeUpcoming:"Aane wale matches dekho",
@@ -824,7 +825,7 @@ async function rateMatch(tid,n){
 function bookStage(t){
  if(!ACCKNOWN.has(t.id))return -1;
  if(!ACC.has(t.id))return 0;
- if(ROOM[t.id]&&ROOM[t.id].id)return 2;
+ if(RACC.has(t.id)&&ROOM[t.id]&&ROOM[t.id].id)return 2;
  return 1;
 }
 function bookingList(){
@@ -858,7 +859,7 @@ function renderBookings(){
    <div class="stat s${Math.max(0,st)}">${esc(label)}</div>
    <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${esc(label)}"><i style="width:${pct}%"></i></div>
    <div class="bsteps"><span class="${cur>=0?"on":""} ${cur===0?"cur":""}">${esc(tr("stepPending"))}</span><span class="${cur>=1?"on":""} ${cur===1?"cur":""}">${esc(tr("stepConfirmed"))}</span><span class="${cur>=2?"on":""} ${cur===2?"cur":""}">${esc(tr("stepRoom"))}</span></div>
-   ${info}${resHtml}${rate}
+   ${st===0&&!ACCERR[t.id]?`<p class="meta" style="margin:0;opacity:.7">Your ID: ${esc(((auth.currentUser||{}).uid||"none").slice(0,6))}</p>`:""}${st<=0&&ACCERR[t.id]?`<p class="meta" style="margin:0;color:#ffb4b4">Status error: ${esc(ACCERR[t.id])} · uid ${esc((auth.currentUser||{}).uid||"none").slice(0,6)}${isAdmin?" · ADMIN account (use a different player account)":""}</p>`:""}${info}${resHtml}${rate}
    <div class="row">${over?`<span class="cd live">${esc(tr("finished"))}</span>`:`<span class="cd" data-cd="${t.start}">${esc(cdText(t.start))}</span>`}<div class="acts"><button class="btn ghost sm" type="button" data-details="${t.id}">${esc(tr("details"))}</button>${over?"":`<button class="btn ghost sm" type="button" data-cal="${t.id}">${esc(tr("addCal"))}</button>`}<button class="btn sm" type="button" data-share-slot="${t.id}" data-slot="${x.s}">${esc(tr("shareSlot"))}</button></div></div></article>`;
  }).join("")+`</div>`;
  tick();
@@ -966,21 +967,36 @@ function tick(){
 }
 setInterval(tick,1000);
 
+function RF(){return arTid==="all"?R:R.filter(r=>r.tid===arTid)}
 function renderAdmin(){
+ {const sel=$("arT");if(sel){sel.innerHTML=`<option value="all">All tournaments</option>`+[...T].sort((a,b)=>a.start-b.start).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("");if(!T.some(t=>t.id===arTid))arTid="all";sel.value=arTid;sel.onchange=()=>{arTid=sel.value;renderAdmin()}}}
  const all=[...T].sort((a,b)=>a.start-b.start);
  $("at").innerHTML=`<tr><th>Name</th><th>Mode</th><th>Fee</th><th>Starts</th><th>Seats</th><th></th></tr>`+(all.map(t=>`<tr><td>${esc(t.name)}</td><td>${MODES[t.mode]}</td><td>₹${t.fee}</td><td>${fmt(t.start)}</td><td>${taken(t.id)}/${t.slots*seatsOf(t)}</td><td><button class="btn ghost sm" data-room="${t.id}">Room</button> <button class="btn ghost sm" data-del="${t.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="6">No tournaments yet.</td></tr>`);
  $("at").querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomDialog(b.dataset.room));
  $("at").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("Delete this tournament?"))deleteDoc(doc(db,"tournaments",b.dataset.del)).catch(()=>{})});
  const tm=Object.fromEntries(T.map(t=>[t.id,t]));
  const sh=$("adminSuggestions");if(sh)sh.innerHTML=SUG.length?SUG.map(x=>`<div class="suggestion-card"><b>${esc(x.email||"Player")}</b><small style="display:block;color:var(--mute)">${x.createdAt?fmt(x.createdAt):"Just now"}</small><p>${esc(x.message||"")}</p></div>`).join(""):`<p class="meta">No suggestions yet.</p>`;
- $("ar").innerHTML=`<tr><th>Tournament / Fee</th><th>Slot</th><th>Player</th><th>Team</th><th>Role</th><th>UID</th><th>WhatsApp</th><th>Payer UPI ID</th><th>Payment status</th><th></th></tr>`+(R.map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1,paid=V.has(r.id);return `<tr><td>${esc(t?t.name:"(deleted)")}<br><small>₹${Number(t?.fee)||0}</small></td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}</td><td>${esc(r.team||"–")}</td><td>${esc(r.role||"–")}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi||"–")}<br><small>Submitted: ${r.paymentSubmittedAt?fmt(r.paymentSubmittedAt):"unknown"}</small></td><td><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" style="width:auto" data-v="${r.id}" ${paid?"checked":""} aria-label="Manually verify payment"><span>${paid?"Verified":"Pending"}</span></label></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="10">No registrations yet.</td></tr>`);
+ $("ar").innerHTML=`<tr><th>Tournament / Fee</th><th>Slot</th><th>Player</th><th>Team</th><th>Role</th><th>UID</th><th>WhatsApp</th><th>Payer UPI ID</th><th>Payment confirmed</th><th>Room ID access</th><th></th></tr>`+(RF().map(r=>{const t=tm[r.tid],per=t?seatsOf(t):1,paid=V.has(r.id),rok=RO.has(r.id);return `<tr><td>${esc(t?t.name:"(deleted)")}<br><small>₹${Number(t?.fee)||0}</small></td><td>${Number.isInteger(r.slot)?(t?slotName(t,r.slot):r.slot+1)+(per>1?" · seat "+(r.seat+1):""):"–"}</td><td>${esc(r.ign)}<br><small>ID: ${esc(String(r.owner||"").slice(0,6))}</small></td><td>${esc(r.team||"–")}</td><td>${esc(r.role||"–")}</td><td>${esc(r.uid)}</td><td>${esc(r.phone)}</td><td>${esc(r.upi||"–")}<br><small>Submitted: ${r.paymentSubmittedAt?fmt(r.paymentSubmittedAt):"unknown"}</small></td><td><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" style="width:auto" data-v="${r.id}" ${paid?"checked":""} aria-label="Payment confirmed"><span>${paid?"Confirmed":"Pending"}</span></label></td><td><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" style="width:auto" data-ro="${r.id}" ${rok?"checked":""} ${paid?"":"disabled"} aria-label="Can see room ID and password"><span>${rok?"Can see":(paid?"Hidden":"–")}</span></label></td><td><button class="btn ghost sm" data-rm="${r.id}">Remove</button></td></tr>`}).join("")||`<tr><td colspan="11">No registrations yet.</td></tr>`);
+ const fail=e=>alert("Could not save: "+((e&&e.code)||e));
+ const others=(r,set)=>R.some(y=>y.id!==r.id&&y.owner===r.owner&&y.tid===r.tid&&set.has(y.id));
+ const setPaid=(bt,r,on)=>{const vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
+  if(on){bt.set(vd,{ok:true});bt.set(ad,{ok:true,tid:r.tid})}
+  else{bt.delete(vd);if(!others(r,V))bt.delete(ad);setRoom(bt,r,false)}};
+ const setRoom=(bt,r,on)=>{const od=doc(db,"roomOk",r.id),rd=doc(db,"roomAccess",r.owner+"_"+r.tid);
+  if(on){bt.set(od,{ok:true});bt.set(rd,{ok:true,tid:r.tid})}
+  else{bt.delete(od);if(!others(r,RO))bt.delete(rd)}};
  $("ar").querySelectorAll("[data-v]").forEach(c=>c.onchange=()=>{
   const r=R.find(y=>y.id===c.dataset.v);if(!r)return;
-  const bt=writeBatch(db),vd=doc(db,"verified",r.id),ad=doc(db,"access",r.owner+"_"+r.tid);
-  if(c.checked){bt.set(vd,{ok:true});bt.set(ad,{ok:true,tid:r.tid})}
-  else{bt.delete(vd);if(!R.some(y=>y.id!==r.id&&y.owner===r.owner&&y.tid===r.tid&&V.has(y.id)))bt.delete(ad)}
-  bt.commit().catch(()=>{c.checked=!c.checked});
+  const bt=writeBatch(db);setPaid(bt,r,c.checked);bt.commit().catch(e=>{c.checked=!c.checked;fail(e)});
  });
+ $("ar").querySelectorAll("[data-ro]").forEach(c=>c.onchange=()=>{
+  const r=R.find(y=>y.id===c.dataset.ro);if(!r||!V.has(r.id)){c.checked=false;return}
+  const bt=writeBatch(db);setRoom(bt,r,c.checked);bt.commit().catch(e=>{c.checked=!c.checked;fail(e)});
+ });
+ const bulk=(fn,msg)=>{const L=RF();if(!L.length)return;if(!confirm(msg+" ("+L.length+" players)?"))return;const bt=writeBatch(db);L.forEach(r=>fn(bt,r));bt.commit().catch(fail)};
+ $("arConf").onclick=()=>bulk((bt,r)=>setPaid(bt,r,true),"Mark payment confirmed for all shown");
+ $("arRoom").onclick=()=>bulk((bt,r)=>{if(V.has(r.id))setRoom(bt,r,true)},"Give room ID access to all confirmed players shown");
+ $("arRoomOff").onclick=()=>bulk((bt,r)=>setRoom(bt,r,false),"Remove room ID access from all shown");
  $("ar").querySelectorAll("[data-rm]").forEach(x=>x.onclick=()=>{const r=R.find(y=>y.id===x.dataset.rm);if(!r||!confirm("Remove this player and free their seat?"))return;const bt=writeBatch(db);bt.delete(doc(db,"registrations",r.id));if(r.jid)bt.delete(doc(db,"joins",r.jid));bt.delete(doc(db,"verified",r.id));if(!R.some(y=>y.id!==r.id&&y.owner===r.owner&&y.tid===r.tid&&V.has(y.id)))bt.delete(doc(db,"access",r.owner+"_"+r.tid));bt.commit().catch(()=>{})});
 }
 $("aadd").onclick=async()=>{
@@ -1035,7 +1051,7 @@ function showTournamentDetails(id){
 async function roomDialog(tid){
  const t=T.find(x=>x.id===tid);let r={};
  try{const sn=await getDoc(doc(db,"rooms",tid));if(sn.exists())r=sn.data()}catch(e){}
- body.innerHTML=`<h3>Room details</h3><div class="meta">${esc(t?t.name:"")}. Players marked Paid see this 10 minutes before the match starts.</div>
+ body.innerHTML=`<h3>Room details</h3><div class="meta">${esc(t?t.name:"")}. Only players you tick under “Room ID access” can see this.</div>
  <label>Room ID<input id="r1" maxlength="30" autocomplete="off" value="${esc(r.id||"")}"></label>
  <label>Password<input id="r2" maxlength="30" autocomplete="off" value="${esc(r.pass||"")}"></label>
  <p class="err" id="e"></p><div class="acts"><button class="btn ghost" id="c">Cancel</button><button class="btn" id="n">Save</button></div>`;
@@ -1202,6 +1218,7 @@ function setAdmin(on){
  if(on){
   adminUnsubs.push(onSnapshot(collection(db,"registrations"),s=>{R=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},()=>{}));
   adminUnsubs.push(onSnapshot(collection(db,"verified"),s=>{V=new Set(s.docs.map(d=>d.id));render()},()=>{}));
+  adminUnsubs.push(onSnapshot(collection(db,"roomOk"),s=>{RO=new Set(s.docs.map(d=>d.id));render()},()=>{}));
   adminUnsubs.push(onSnapshot(collection(db,"suggestions"),s=>{SUG=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));renderAdmin()},()=>{}));
  }
  render();
@@ -1359,7 +1376,7 @@ function remind(tid){
  if(t&&ACC.has(tid)&&t.start>Date.now()&&t.start-Date.now()<=600000)note("rem:"+tid,"Match starts soon",t.name+" starts in about 10 minutes. Get ready!");
 }
 function watchRoom(tid){
- if(roomUn[tid])return;
+ if(roomUn[tid]||!RACC.has(tid)||!ACC.has(tid))return;
  roomUn[tid]=onSnapshot(doc(db,"rooms",tid),sn=>{
   if(sn.exists()){ROOM[tid]=sn.data();const t=T.find(x=>x.id===tid);
    note("room:"+tid+":"+ROOM[tid].id,"Room ready",(t?t.name+". ":"")+"Room ID "+ROOM[tid].id+(ROOM[tid].pass?", password "+ROOM[tid].pass:""),"room")}
@@ -1377,7 +1394,7 @@ function schedule(tid){
 function resetWatch(){
  Object.values(watching).forEach(u=>u&&u());Object.keys(watching).forEach(k=>delete watching[k]);
  Object.values(roomUn).forEach(u=>u&&u());Object.keys(roomUn).forEach(k=>delete roomUn[k]);
- Object.keys(ROOM).forEach(k=>delete ROOM[k]);Object.keys(pollT).forEach(k=>{clearInterval(pollT[k]);delete pollT[k]});ACC.clear();ACCKNOWN.clear();
+ Object.keys(ROOM).forEach(k=>delete ROOM[k]);Object.keys(pollT).forEach(k=>{clearInterval(pollT[k]);delete pollT[k]});ACC.clear();ACCKNOWN.clear();RACC.clear();Object.values(watchingR).forEach(u=>u&&u());Object.keys(watchingR).forEach(k=>delete watchingR[k]);
 }
 let regsLoaded=null;
 function restoreMine(u){
@@ -1390,7 +1407,7 @@ function restoreMine(u){
  }).catch(()=>{regsLoaded=null});
 }
 function syncWatch(){
- const u=auth.currentUser;if(!u||isAdmin)return;
+ const u=auth.currentUser;if(!u)return;
  restoreMine(u);
  Object.keys(mine).forEach(tid=>{
   if(watching[tid]||!T.some(x=>x.id===tid)||!myList(tid).length)return;
@@ -1399,9 +1416,14 @@ function syncWatch(){
    if(exists){const was=ACC.has(tid);ACC.add(tid);const tt=T.find(x=>x.id===tid);if(tt&&tt.start+3*3600e3>Date.now())note("conf:"+tid,tr("tConfirmed"),tt.name+" is confirmed. Room details will appear here as soon as the admin publishes them.","confirmed");if(!was)watchRoom(tid)}else ACC.delete(tid);
    schedule(tid);if(ACC.has(tid))watchRoom(tid);renderNotes();renderBookings();
   };
+  if(!watchingR[tid])watchingR[tid]=onSnapshot(doc(db,"roomAccess",u.uid+"_"+tid),sn=>{
+   if(sn.exists()){RACC.add(tid);watchRoom(tid)}
+   else{RACC.delete(tid);if(roomUn[tid]){roomUn[tid]();roomUn[tid]=null}delete ROOM[tid]}
+   renderNotes();renderBookings();
+  },err=>{console.warn("roomAccess listener failed",tid,err&&err.code);watchingR[tid]=null});
   const aref=doc(db,"access",u.uid+"_"+tid);
   watching[tid]=onSnapshot(aref,sn=>{if(pollT[tid]){clearInterval(pollT[tid]);pollT[tid]=null}applyAcc(sn.exists())},err=>{
-   console.warn("access listener failed",tid,err&&err.code);
+   console.warn("access listener failed",tid,err&&err.code);ACCERR[tid]=(err&&err.code)||"error";
    watching[tid]=null;
    // Fallback: poll every 4s so the card still updates
    if(!pollT[tid])pollT[tid]=setInterval(()=>{getDoc(aref).then(sn=>applyAcc(sn.exists())).catch(e=>{console.warn("access poll failed",e&&e.code);ACCKNOWN.add(tid);renderBookings()})},4000);
@@ -1423,10 +1445,10 @@ function renderNotes(){
   const at=new Date(t.start-600000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
   let st;
   if(!ACC.has(tid))st="Waiting for payment confirmation. You will be notified once it is marked paid.";
-  else if(ROOM[tid]&&ROOM[tid].id)st=`Payment confirmed. Room ID: <b>${esc(ROOM[tid].id)}</b>${ROOM[tid].pass?` · Password: <b>${esc(ROOM[tid].pass)}</b>`:""}`;
+  else if(RACC.has(tid)&&ROOM[tid]&&ROOM[tid].id)st=`Payment confirmed. Room ID: <b>${esc(ROOM[tid].id)}</b>${ROOM[tid].pass?` · Password: <b>${esc(ROOM[tid].pass)}</b>`:""}`;
   else if(t.start<=now)st="Payment confirmed. This match has started.";
-  else if(!inWin)st=`Payment confirmed. The room ID appears here at ${at}, 10 minutes before the match.`;
-  else st="Payment confirmed. The match starts soon. Waiting for the room details.";
+  else if(!inWin)st=`Payment confirmed. The admin will share the room ID here.`;
+  else st="Payment confirmed. Waiting for the admin to share the room details.";
   return `<div class="nt"><b class="t">${esc(t.name)}${sl?" · "+sl:""}</b><div class="meta">${fmt(t.start)}</div><p>${st}</p></div>`;
  }).join("");
  h+=`<div class="acts"><button class="btn" id="nc">Close</button></div>`;
