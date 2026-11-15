@@ -585,10 +585,26 @@ function tone(seq){
    o.connect(g);g.connect(actx.destination);o.start(t0);o.stop(t0+d+.02);t0+=d});
  }catch(e){}
 }
+// Your own sound files (put them in a "sounds" folder next to index.html).
+// join   = plays when a player finishes joining a tournament
+// notify = plays when a new notification arrives (confirmed, room ready, reminder)
+const SFX={join:"sounds/join.mp3",notify:"sounds/notify.mp3"};
+const sfxCache={};
+function playSfx(name,fallback){
+ try{
+  let a=sfxCache[name];
+  if(!a){a=sfxCache[name]=new Audio(SFX[name]);a.preload="auto";a.volume=1}
+  a.currentTime=0;
+  const pr=a.play();
+  if(pr&&pr.catch)pr.catch(()=>{if(fallback)fallback()});
+ }catch(e){if(fallback)fallback()}
+}
 function feedback(kind){
  if(!soundOn)return;
  const P={confirmed:[[[660,.12],[880,.22]],[60,40,120]],room:[[[523,.1],[659,.1],[784,.26]],[100,60,100,60,220]],remind:[[[740,.16]],[80]],submit:[[[520,.09]],[30]]}[kind];
- if(!P)return;tone(P[0]);try{navigator.vibrate&&navigator.vibrate(P[1])}catch(e){}
+ if(!P)return;
+ try{navigator.vibrate&&navigator.vibrate(P[1])}catch(e){}
+ playSfx(kind==="submit"?"join":"notify",()=>tone(P[0]));
 }
 
 // Remember last details so repeat players tap less
@@ -985,7 +1001,7 @@ async function submit(c){
  if(got==null)return pick(Object.assign(c,{msg:"That slot just filled up, or this UID is already registered for this tournament. Pick another slot."}));
  if(auth.currentUser?.email){playerProfile={...playerProfile,ign:v.ign,uid:v.uid,phone:v.phone,role:playerProfile.role||v.role||"",upi:c.payerUpi,email:auth.currentUser.email};setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true}).catch(()=>{});}
  const code="TF-"+Math.random().toString(36).slice(2,6).toUpperCase();
- const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot,seat:got,team:v.team||"",role:v.role||"",ign:v.ign});mine[t.id]=l;saveLast(v);feedback("submit");
+ const l=myList(t.id).filter(x=>x.s>=0);l.push({c:code,s:c.slot,seat:got,team:v.team||"",role:v.role||"",ign:v.ign});mine[t.id]=l;saveLast(v);feedback("joined");
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
  syncWatch();
  body.innerHTML=`<h3>Request submitted</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is reserved as <b>Pending payment verification</b>. Your slot is not confirmed yet. An admin must verify the payment before room details become available. We’ll send updates to ${esc(v.phone)}.</p>
@@ -1144,7 +1160,7 @@ function sysNotify(title,text,tag){
 function toast(msg){const d=document.createElement("div");d.className="toast";d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),9000)}
 function note(key,title,msg,kind){
  const s=seenMap();if(s[key])return;s[key]=1;try{localStorage.setItem("tf_seen",JSON.stringify(s))}catch(e){}
- $("bdot").hidden=false;toast(title+": "+msg);sysNotify(title,msg,key);feedback(kind||"remind");
+ $("bdot").hidden=false;toast(title+": "+msg);sysNotify(title,msg,key);feedback(kind||"notify");
 }
 function remind(tid){
  const t=T.find(x=>x.id===tid);
