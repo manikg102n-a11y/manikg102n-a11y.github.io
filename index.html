@@ -1364,7 +1364,7 @@ function watchRoom(tid){
   if(sn.exists()){ROOM[tid]=sn.data();const t=T.find(x=>x.id===tid);
    note("room:"+tid+":"+ROOM[tid].id,"Room ready",(t?t.name+". ":"")+"Room ID "+ROOM[tid].id+(ROOM[tid].pass?", password "+ROOM[tid].pass:""),"room")}
   renderNotes();renderBookings();
- },()=>{roomUn[tid]=null;retries[tid]=(retries[tid]||0)+1;if(retries[tid]<20)setTimeout(()=>watchRoom(tid),15000)});
+ },()=>{roomUn[tid]=null;retries[tid]=(retries[tid]||0)+1;if(retries[tid]<200)setTimeout(()=>watchRoom(tid),Math.min(60000,5000*retries[tid]))});
 }
 function schedule(tid){
  clearTimeout(timers[tid]);
@@ -1378,15 +1378,26 @@ function resetWatch(){
  Object.values(roomUn).forEach(u=>u&&u());Object.keys(roomUn).forEach(k=>delete roomUn[k]);
  Object.keys(ROOM).forEach(k=>delete ROOM[k]);ACC.clear();
 }
+let regsLoaded=null;
+function restoreMine(u){
+ if(regsLoaded===u.uid)return;regsLoaded=u.uid;
+ getDocs(query(collection(db,"registrations"),where("owner","==",u.uid))).then(sn=>{
+  let ch=false;
+  sn.docs.forEach(d=>{const r=d.data();if(!r.tid||myList(r.tid).length)return;
+   mine[r.tid]=[{c:"TF-"+d.id.slice(-4).toUpperCase(),s:Number.isInteger(r.slot)?r.slot:0,seat:r.seat||0,team:r.team||"",role:r.role||"",ign:r.ign||""}];ch=true});
+  if(ch){try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}syncWatch();renderNotes();renderBookings()}
+ }).catch(()=>{regsLoaded=null});
+}
 function syncWatch(){
  const u=auth.currentUser;if(!u||isAdmin)return;
+ restoreMine(u);
  Object.keys(mine).forEach(tid=>{
   if(watching[tid]||!T.some(x=>x.id===tid)||!myList(tid).length)return;
   watching[tid]=onSnapshot(doc(db,"access",u.uid+"_"+tid),sn=>{
    ACCKNOWN.add(tid);
    if(sn.exists()){ACC.add(tid);const tt=T.find(x=>x.id===tid);if(tt&&tt.start+3*3600e3>Date.now())note("conf:"+tid,tr("tConfirmed"),tt.name+" is confirmed. We’ll share the room ID 10 minutes before the match.","confirmed")}else ACC.delete(tid);
-   schedule(tid);renderNotes();renderBookings();
-  },()=>{});
+   schedule(tid);if(ACC.has(tid))watchRoom(tid);renderNotes();renderBookings();
+  },()=>{watching[tid]=null;retries["a"+tid]=(retries["a"+tid]||0)+1;if(retries["a"+tid]<40)setTimeout(syncWatch,10000)});
  });
 }
 function renderNotes(){
@@ -1418,7 +1429,8 @@ function renderNotes(){
 $("bell").onclick=()=>{$("bdot").hidden=true;$("ndlg").showModal();renderNotes()};
 $("ndlg").addEventListener("click",e=>{if(e.target===$("ndlg"))$("ndlg").close()});
 setInterval(renderNotes,15000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)Object.keys(watching).forEach(schedule)});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)return;syncWatch();Object.keys(watching).forEach(tid=>{schedule(tid);if(ACC.has(tid))watchRoom(tid)});renderNotes();renderBookings()});
+window.addEventListener("online",()=>{syncWatch();ACC.forEach(tid=>watchRoom(tid))});
 
 $("shareApp").onclick=()=>doShare("Join paid Free Fire tournaments in Solo, Duo and Squad on TF Tournaments.");
 // Hide browser long-press menus (copy link, open in new tab) outside typing areas and room details
