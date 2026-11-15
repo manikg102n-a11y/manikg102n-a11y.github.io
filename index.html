@@ -313,6 +313,38 @@ html,body{max-width:100%;overflow-x:clip}
 .install{position:fixed;z-index:115;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));width:min(460px,calc(100% - 24px));display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:16px;background:var(--panel);border:2px solid var(--flame);box-shadow:0 14px 40px rgba(0,0,0,.4)}
 .install p{margin:0;flex:1;font-weight:600;font-size:14px;line-height:1.35}
 @media(max-width:420px){.bk .facts{grid-template-columns:1fr 1fr}}
+
+/* ===== Round 2 upgrades ===== */
+.toolbar select{width:auto;min-width:0;padding:8px 12px;border-radius:999px;font-size:15px}
+.cd.far{color:var(--ink)}
+.cd.near{color:var(--gold)}
+.cd.urgent{color:var(--flame);animation:livePulse 1.4s ease-out infinite}
+.cd.live{color:var(--ok)}
+.skel{border:2px solid var(--line);border-radius:16px;background:var(--panel);padding:16px;display:grid;gap:12px}
+.skel i{display:block;height:14px;border-radius:8px;background:linear-gradient(90deg,var(--panel2) 25%,var(--line) 50%,var(--panel2) 75%);background-size:200% 100%;animation:skel 1.3s linear infinite}
+.skel i:nth-child(1){width:60%;height:20px}.skel i:nth-child(2){width:40%}.skel i:nth-child(3){width:85%}.skel i:nth-child(4){width:30%;height:34px;border-radius:99px}
+@keyframes skel{to{background-position:-200% 0}}
+.offline{position:fixed;top:0;left:0;right:0;z-index:140;background:var(--flame);color:var(--onflame);text-align:center;font-weight:700;font-size:14px;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px}
+.ptr{position:fixed;top:0;left:50%;transform:translate(-50%,-70px);z-index:139;background:var(--panel);border:2px solid var(--flame);border-radius:99px;padding:8px 16px;font-weight:700;font-size:14px;transition:transform .15s;pointer-events:none}
+.ptr.show{transform:translate(-50%,calc(14px + env(safe-area-inset-top,0px)))}
+.copyrow{display:flex;gap:8px;flex-wrap:wrap}
+.refline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.refline b{color:var(--ink);letter-spacing:.06em}
+.result{background:var(--panel2);border:1px solid var(--ok);border-radius:10px;padding:8px 12px;font-weight:700;color:var(--ok)}
+.rate{display:grid;gap:6px}
+.rate .faces{display:flex;gap:6px}
+.rate .faces button{flex:1;border:2px solid var(--line);background:var(--panel2);border-radius:12px;font-size:24px;padding:6px 0;cursor:pointer}
+.rate .faces button:active{transform:scale(.92);border-color:var(--flame)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stats div{background:var(--panel2);border-radius:10px;padding:10px 6px;text-align:center}
+.stats b{display:block;font:400 20px "Russo One",Impact,sans-serif}
+.stats small{color:var(--mute);font-size:12px}
+.onb{text-align:center;display:grid;gap:12px;justify-items:center}
+.onb .big{font-size:56px;line-height:1}
+.onb .dots{display:flex;gap:8px}
+.onb .dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.onb .dots i.on{background:var(--flame)}
+@media(max-width:420px){.stats{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -344,6 +376,8 @@ html,body{max-width:100%;overflow-x:clip}
   <p class="sub" data-i18n="scrimsSub">Pick a section below. Each box is one slot (or a team in Clash Squad and Lone Wolf). In team modes you can join an open seat. Orange fill shows how full it is, gold is yours.</p>
   <div class="toolbar">
     <label class="search"><span class="sr" data-i18n="searchPh">Search tournaments…</span><input id="q" type="search" data-i18n-ph="searchPh" placeholder="Search tournaments…" autocomplete="off" maxlength="40"></label>
+    <select id="feeF" aria-label="Entry fee"><option value="any" data-i18n="feeAny">Any fee</option><option value="free" data-i18n="feeFree">Free</option><option value="u50" data-i18n="feeU50">Under ₹50</option><option value="50100" data-i18n="fee50100">₹50 – ₹100</option><option value="o100" data-i18n="feeO100">Over ₹100</option></select>
+    <select id="sortF" aria-label="Sort"><option value="soon" data-i18n="sortSoon">Soonest first</option><option value="low" data-i18n="sortLow">Lowest fee</option><option value="high" data-i18n="sortHigh">Highest fee</option></select>
     <div class="tabs" id="stf" role="group" aria-label="Status filter"><button type="button" data-st="upcoming" data-i18n="fUp">Upcoming</button><button type="button" data-st="ended" data-i18n="fEnd">Ended</button><button type="button" data-st="all" data-i18n="fAll">All</button></div>
   </div>
   <div class="tabs" id="tabs"></div>
@@ -444,6 +478,10 @@ html,body{max-width:100%;overflow-x:clip}
 
 <div class="install" id="installBar" hidden role="region" aria-label="Install app"><p data-i18n="installMsg">Add TF Tournaments to your home screen for one-tap access.</p><button class="btn sm" id="installGo" type="button" data-i18n="installBtn">Add to home screen</button><button class="btn ghost sm" id="installNo" type="button" data-i18n="notNow">Not now</button></div>
 
+<div class="offline" id="offBar" hidden role="status" data-i18n="offline">You’re offline. Showing saved matches.</div>
+<div class="ptr" id="ptr" aria-hidden="true"></div>
+<dialog id="onbDlg" aria-label="Quick guide"><div class="dlg" id="onbBody"></div></dialog>
+
 <dialog id="profileDlg"><div class="dlg" id="profileBody"></div></dialog>
 <dialog id="lbDlg" aria-label="Leaderboard"><div class="dlg">
   <h3>Leaderboard</h3>
@@ -529,6 +567,18 @@ const I18N={
   emptyLb:"No results published yet. Winners will show up here after the next match.",
   installMsg:"Add TF Tournaments to your home screen for one-tap access.",installBtn:"Add to home screen",notNow:"Not now",iosHint:"Tap the Share button in Safari, then choose “Add to Home Screen”.",
   langLabel:"Language",tapSwitch:"tap to switch",soundLabel:"Sounds & vibration",on:"On",off:"Off",
+  copy:"Copy",copied:"Copied",copyId:"Copy room ID",copyPass:"Copy password",openFF:"Open Free Fire",openFFHint:"Open Free Fire on your phone and paste the room ID.",
+  addCal:"Add to calendar",ref:"Ref",copyLink:"Copy link",linkCopied:"Link copied",notFound:"That match was not found. It may have been removed.",
+  rateAsk:"How was this match?",rateThanks:"Thanks for your feedback!",rateFail:"Could not send your rating. Try again.",
+  result:"Your result",rank:"Rank",finished:"Match finished",
+  waitJoin:"Notify me if a seat opens",waitOn:"✓ We’ll alert you · tap to cancel",waitMsg:"We’ll alert you if a seat opens while the app is open.",tWait:"A seat opened",tWaitMsg:"A seat is free now. Join before it fills again.",
+  feeAny:"Any fee",feeFree:"Free",feeU50:"Under ₹50",fee50100:"₹50 – ₹100",feeO100:"Over ₹100",sortSoon:"Soonest first",sortLow:"Lowest fee",sortHigh:"Highest fee",emptyFee:"No matches in this fee range. Try a different range.",clearFee:"Show any fee",
+  payHelpT:"Paid but not showing?",payHelp:"After you submit, you get a reference code like TF-AB12. An admin checks payments by hand, so the status stays Pending until then. If it is still Pending near match time, message support with your reference code and the UPI ID you paid from.",
+  refTip:"Keep this code. Share it with support if your payment is not showing.",copyRef:"Copy code",
+  statsTitle:"My stats",stM:"Matches",stK:"Kills",stW:"Wins",stE:"Won",
+  onbSkip:"Skip",onbNext:"Next",onbGo:"Got it",guide:"Show quick guide",
+  onb1t:"Pick your slot",onb1d:"Choose a tournament, tap Join and pick a free slot.",onb2t:"Pay by UPI",onb2d:"Pay the entry fee, then enter the UPI ID you paid from. An admin confirms it.",onb3t:"Get your room ID",onb3d:"10 minutes before the match, the room ID and password appear on your booking card.",
+  offline:"You’re offline. Showing saved matches.",ptrPull:"Pull to refresh",ptrRelease:"Release to refresh",ptrLoad:"Refreshing…",
   tConfirmed:"Slot confirmed",tRoom:"Room ready"},
  hi:{navTournaments:"Tournaments",navLb:"Leaderboard",navHow:"Kaise kaam karta hai",navRules:"Rules",navFaq:"FAQ",navSupport:"Madad",navProfile:"Profile",
   heroH:"Ek baar pay karo. Aisi lobby mein utro jo jeetne ke liye khelti hai.",
@@ -555,6 +605,18 @@ const I18N={
   emptyLb:"Abhi koi result publish nahi hua. Agle match ke baad winners yahan dikhenge.",
   installMsg:"TF Tournaments ko home screen pe add karo, ek tap mein khul jayega.",installBtn:"Home screen pe add karo",notNow:"Abhi nahi",iosHint:"Safari mein Share button dabao, phir “Add to Home Screen” chuno.",
   langLabel:"Bhasha",tapSwitch:"badalne ke liye tap karo",soundLabel:"Sound aur vibration",on:"On",off:"Off",
+  copy:"Copy karo",copied:"Copy ho gaya",copyId:"Room ID copy karo",copyPass:"Password copy karo",openFF:"Free Fire kholo",openFFHint:"Apne phone pe Free Fire kholo aur room ID paste karo.",
+  addCal:"Calendar mein add karo",ref:"Ref",copyLink:"Link copy karo",linkCopied:"Link copy ho gaya",notFound:"Ye match nahi mila. Shayad hata diya gaya hai.",
+  rateAsk:"Ye match kaisa laga?",rateThanks:"Feedback ke liye shukriya!",rateFail:"Rating nahi bhej paye. Dobara try karo.",
+  result:"Aapka result",rank:"Rank",finished:"Match khatam",
+  waitJoin:"Seat khali ho to batao",waitOn:"✓ Hum alert denge · cancel ke liye tap karo",waitMsg:"App khula ho to seat khali hone par hum alert denge.",tWait:"Seat khali hui",tWaitMsg:"Ab ek seat khali hai. Bharne se pehle join karo.",
+  feeAny:"Koi bhi fee",feeFree:"Free",feeU50:"₹50 se kam",fee50100:"₹50 – ₹100",feeO100:"₹100 se zyada",sortSoon:"Jaldi wale pehle",sortLow:"Kam fee pehle",sortHigh:"Zyada fee pehle",emptyFee:"Is fee range mein koi match nahi. Dusra range try karo.",clearFee:"Koi bhi fee dikhao",
+  payHelpT:"Pay kiya par dikh nahi raha?",payHelp:"Submit karne ke baad TF-AB12 jaisa reference code milta hai. Admin payment haath se check karta hai, isliye tab tak status Pending rehta hai. Match ke paas bhi Pending ho to support ko reference code aur jis UPI ID se pay kiya wo bhejo.",
+  refTip:"Ye code sambhal ke rakho. Payment na dikhe to support ko bhejo.",copyRef:"Code copy karo",
+  statsTitle:"Mere stats",stM:"Matches",stK:"Kills",stW:"Jeet",stE:"Jeeta",
+  onbSkip:"Skip",onbNext:"Aage",onbGo:"Samajh gaya",guide:"Quick guide dikhao",
+  onb1t:"Apna slot chuno",onb1d:"Tournament chuno, Join dabao aur khali slot pick karo.",onb2t:"UPI se pay karo",onb2d:"Entry fee pay karo, phir jis UPI ID se pay kiya wo daalo. Admin confirm karega.",onb3t:"Room ID pao",onb3d:"Match se 10 minute pehle room ID aur password booking card pe dikhega.",
+  offline:"Aap offline ho. Saved matches dikh rahe hain.",ptrPull:"Refresh ke liye kheencho",ptrRelease:"Refresh ke liye chhodo",ptrLoad:"Refresh ho raha hai…",
   tConfirmed:"Slot confirm ho gaya",tRoom:"Room ready"}
 };
 const tr=(k,a)=>{const v=(I18N[LANG]&&I18N[LANG][k]!=null)?I18N[LANG][k]:(I18N.en[k]!=null?I18N.en[k]:k);return typeof v==="function"?v(a):v};
@@ -601,10 +663,10 @@ function playSfx(name,fallback){
 }
 function feedback(kind){
  if(!soundOn)return;
- const P={confirmed:[[[660,.12],[880,.22]],[60,40,120]],room:[[[523,.1],[659,.1],[784,.26]],[100,60,100,60,220]],remind:[[[740,.16]],[80]],submit:[[[520,.09]],[30]]}[kind];
- if(!P)return;
+ const isJoin=kind==="submit"||kind==="joined";
+ const P=isJoin?[[[520,.09],[780,.16]],[60,40,120]]:[[[740,.14],[988,.2]],[100,60,100]];
  try{navigator.vibrate&&navigator.vibrate(P[1])}catch(e){}
- playSfx(kind==="submit"?"join":"notify",()=>tone(P[0]));
+ playSfx(isJoin?"join":"notify",()=>tone(P[0]));
 }
 
 // Remember last details so repeat players tap less
@@ -625,7 +687,7 @@ function shareSlot(tid,s){
  const d=new Date(t.start),same=d.toDateString()===new Date().toDateString();
  const when=d.toLocaleString([],same?{hour:"numeric",minute:"2-digit"}:{weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
  const txt="I’m in "+slotName(t,s).toLowerCase()+" in "+t.name+" at "+when+". Join me on TF Tournaments:";
- window.open("https://wa.me/?text="+encodeURIComponent(txt+" "+location.origin+"/"),"_blank","noopener");
+ window.open("https://wa.me/?text="+encodeURIComponent(txt+" "+matchLink(t.id)),"_blank","noopener");
 }
 
 // Prize breakdown: read the top three payouts out of the organiser’s text
@@ -637,51 +699,15 @@ function payouts(t){
  return found?out:null;
 }
 
-// Booking status card
-function bookStage(t){
- if(!ACCKNOWN.has(t.id))return -1;
- if(!ACC.has(t.id))return 0;
- if(ROOM[t.id]&&ROOM[t.id].id&&t.start-600000<=Date.now())return 2;
- return 1;
-}
-function bookingList(){
- const now=Date.now(),out=[];
- Object.keys(mine).forEach(tid=>{const t=T.find(x=>x.id===tid);if(!t||t.start+3*3600e3<now)return;
-  myList(tid).filter(x=>x.s>=0).forEach(x=>out.push({t,x}))});
- return out.sort((a,b)=>a.t.start-b.t.start);
-}
-function renderBookings(){
- const host=$("myBookings");if(!host)return;
- const items=bookingList();
- if(!items.length){host.hidden=true;host.innerHTML="";return}
- host.hidden=false;
- host.innerHTML=`<h2>${esc(tr("myBookings"))}</h2><div class="grid">`+items.map(({t,x})=>{
-  const st=bookStage(t),per=seatsOf(t),pct=st<0?10:[33,66,100][st];
-  const team=x.team||slotTeam(t.id,x.s)||"–";
-  const role=x.role||(J.find(j=>j.tid===t.id&&j.slot===x.s&&x.ign&&j.ign===x.ign)||{}).role||"–";
-  const label=st<0?tr("checking"):tr("st"+st);
-  const cur=Math.max(0,st);
-  const info=st===2?`<div class="pay">${esc(tr("roomId"))}: <b>${esc(ROOM[t.id].id)}</b>${ROOM[t.id].pass?` · ${esc(tr("password"))}: <b>${esc(ROOM[t.id].pass)}</b>`:""}</div>`
-   :st===1?`<p class="meta" style="margin:0">${esc(tr("roomSoon"))}</p>`:st===0?`<p class="meta" style="margin:0">${esc(tr("payWait"))}</p>`:"";
-  return `<article class="card bk"><div class="row"><h3>${esc(t.name)}</h3><span class="tag g-${(MODE[t.mode]||{}).g||"br"}">${esc(MODES[t.mode]||t.mode)}</span></div>
-   <div class="facts"><div><small>${esc(tr("slot"))}</small><b>${esc(slotName(t,x.s))}</b></div>${per>1?`<div><small>${esc(tr("team"))}</small><b>${esc(team)}</b></div>`:""}<div><small>${esc(tr("role"))}</small><b>${esc(role)}</b></div></div>
-   <div class="stat s${Math.max(0,st)}">${esc(label)}</div>
-   <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${esc(label)}"><i style="width:${pct}%"></i></div>
-   <div class="bsteps"><span class="${cur>=0?"on":""} ${cur===0?"cur":""}">${esc(tr("stepPending"))}</span><span class="${cur>=1?"on":""} ${cur===1?"cur":""}">${esc(tr("stepConfirmed"))}</span><span class="${cur>=2?"on":""} ${cur===2?"cur":""}">${esc(tr("stepRoom"))}</span></div>
-   ${info}
-   <div class="row"><span class="cd" data-cd="${t.start}">${esc(cdText(t.start))}</span><div class="acts"><button class="btn ghost sm" type="button" data-details="${t.id}">${esc(tr("details"))}</button><button class="btn sm" type="button" data-share-slot="${t.id}" data-slot="${x.s}">${esc(tr("shareSlot"))}</button></div></div></article>`;
- }).join("")+`</div>`;
-}
-$("myBookings").addEventListener("click",e=>{
- const d=e.target.closest("[data-details]");if(d){showTournamentDetails(d.dataset.details);return}
- const sh=e.target.closest("[data-share-slot]");if(sh)shareSlot(sh.dataset.shareSlot,+sh.dataset.slot);
-});
+
+
 setInterval(renderBookings,15000);
 
 // Empty states with next steps
 function emptyState(groupName){
  const q=search.trim(),now=Date.now(),hasEnded=T.some(t=>t.start<=now);let msg,acts=[];
  if(q){msg=tr("emptySearch",q);acts=[["clear",tr("clearSearch")]]}
+ else if(feeF!=="any"){msg=tr("emptyFee");acts=[["clearfee",tr("clearFee")]]}
  else if(statusF==="ended"){msg=tr("emptyEnded");acts=[["upcoming",tr("seeUpcoming")]]}
  else{msg=groupName?tr("emptyGroup",groupName):tr("emptyNone");
   if(cat!=="all")acts.push(["allmodes",tr("allModes")]);
@@ -694,13 +720,17 @@ function emptyState(groupName){
 // Search, status filter, empty-state actions, favourites, share slot (all inside the list)
 $("q").addEventListener("input",e=>{search=e.target.value;render()});
 $("stf").querySelectorAll("button").forEach(b=>b.onclick=()=>{statusF=b.dataset.st;render()});
+$("feeF").onchange=e=>{feeF=e.target.value;render()};
+$("sortF").onchange=e=>{sortF=e.target.value;render()};
 $("list").addEventListener("click",e=>{
  const f=e.target.closest("[data-fav]");
  if(f){const m=f.dataset.fav;FAV.has(m)?FAV.delete(m):FAV.add(m);lsSet("tf_fav",JSON.stringify([...FAV]));render();return}
  const sh=e.target.closest("[data-share-slot]");if(sh){shareSlot(sh.dataset.shareSlot,+sh.dataset.slot);return}
+ const w=e.target.closest("[data-wait]");if(w){toggleWait(w.dataset.wait);return}
  const a=e.target.closest("[data-act]");if(!a)return;
  const k=a.dataset.act;
  if(k==="clear"){search="";$("q").value=""}
+ else if(k==="clearfee"){feeF="any";$("feeF").value="any"}
  else if(k==="ended")statusF="ended";
  else if(k==="upcoming")statusF="upcoming";
  else if(k==="allmodes"){cat="all";sub="all"}
@@ -729,6 +759,155 @@ $("installNo").onclick=()=>{lsSet("tf_inst_x",String(Date.now()));$("installBar"
 showInstall();
 $("langBtn").onclick=()=>setLang(LANG==="hi"?"en":"hi");
 
+// ===== Round 2: helpers =====
+let feeF="any",sortF="soon",joinsLive=false,pendingMatch=null;
+let WAIT={};try{WAIT=JSON.parse(lsGet("tf_wait","{}"))||{}}catch(e){}
+let RATED={};try{RATED=JSON.parse(lsGet("tf_rated","{}"))||{}}catch(e){}
+const feeOk=t=>{const f=Number(t.fee)||0;return feeF==="any"||(feeF==="free"&&f===0)||(feeF==="u50"&&f>0&&f<50)||(feeF==="50100"&&f>=50&&f<=100)||(feeF==="o100"&&f>100)};
+const matchLink=id=>location.origin+location.pathname+"#match-"+id;
+
+async function copyText(txt){
+ try{await navigator.clipboard.writeText(txt)}
+ catch(e){const ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){}ta.remove()}
+ toast(tr("copied"));
+}
+function openFreeFire(){
+ if(/android/i.test(navigator.userAgent))location.href="intent://#Intent;package=com.dts.freefireth;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.dts.freefireth;end";
+ else toast(tr("openFFHint"));
+}
+function addToCalendar(tid){
+ const t=T.find(x=>x.id===tid);if(!t)return;
+ const z=ms=>new Date(ms).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+ const e2=x=>String(x||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+ const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//TF Tournaments//EN","CALSCALE:GREGORIAN","BEGIN:VEVENT",
+  "UID:"+t.id+"@tf-tournaments","DTSTAMP:"+z(Date.now()),"DTSTART:"+z(t.start),"DTEND:"+z(t.start+3600000),
+  "SUMMARY:"+e2(t.name+" (Free Fire)"),"DESCRIPTION:"+e2((MODES[t.mode]||t.mode)+" on "+(t.map||"Bermuda")+". Room ID is shared 10 minutes before the match. "+matchLink(t.id)),"LOCATION:Free Fire",
+  "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:"+e2(t.name+" starts in 30 minutes"),"END:VALARM",
+  "BEGIN:VALARM","TRIGGER:-PT10M","ACTION:DISPLAY","DESCRIPTION:"+e2(t.name+" starts in 10 minutes. Check your room ID."),"END:VALARM",
+  "END:VEVENT","END:VCALENDAR"].join("\r\n");
+ const url=URL.createObjectURL(new Blob([ics],{type:"text/calendar;charset=utf-8"}));
+ const a=document.createElement("a");a.href=url;a.download="tf-match-"+t.id+".ics";document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+
+// Waiting list (checked on this device while the app is open)
+function toggleWait(tid){
+ if(WAIT[tid]){delete WAIT[tid]}else{WAIT[tid]=1;toast(tr("waitMsg"))}
+ lsSet("tf_wait",JSON.stringify(WAIT));render();
+}
+function checkWaitlist(){
+ if(!joinsLive||!loadedT)return;let ch=false;
+ Object.keys(WAIT).forEach(tid=>{
+  const t=T.find(x=>x.id===tid);
+  if(!t||t.start<=Date.now()||myList(tid).length){delete WAIT[tid];ch=true;return}
+  if(t.slots*seatsOf(t)-taken(tid)>0){delete WAIT[tid];ch=true;note("wait:"+tid+":"+Date.now(),tr("tWait"),t.name+": "+tr("tWaitMsg"))}
+ });
+ if(ch)lsSet("tf_wait",JSON.stringify(WAIT));
+}
+
+// Results and rating
+function resultFor(t,x){
+ const ign=String((x&&x.ign)||savedInfo().ign||playerProfile.ign||"").trim().toLowerCase();if(!ign)return null;
+ return LB.find(e=>e.tournament===t.name&&String(e.player).trim().toLowerCase()===ign)||null;
+}
+async function rateMatch(tid,n){
+ const t=T.find(x=>x.id===tid);if(!t)return;
+ try{
+  if(!auth.currentUser)await signInAnonymously(auth);
+  const u=auth.currentUser;
+  await setDoc(doc(collection(db,"suggestions")),{message:"Match rating: "+n+"/5 for \""+t.name+"\" ("+(MODES[t.mode]||t.mode)+")",uid:u.uid,email:u.email||"",createdAt:Date.now(),status:"new"});
+  RATED[tid]=n;lsSet("tf_rated",JSON.stringify(RATED));toast(tr("rateThanks"));renderBookings();
+ }catch(e){toast(tr("rateFail"))}
+}
+
+// Booking status card
+function bookStage(t){
+ if(!ACCKNOWN.has(t.id))return -1;
+ if(!ACC.has(t.id))return 0;
+ if(ROOM[t.id]&&ROOM[t.id].id&&t.start-600000<=Date.now())return 2;
+ return 1;
+}
+function bookingList(){
+ const now=Date.now(),out=[];
+ Object.keys(mine).forEach(tid=>{const t=T.find(x=>x.id===tid);if(!t||t.start+24*3600e3<now)return;
+  myList(tid).filter(x=>x.s>=0).forEach(x=>out.push({t,x}))});
+ return out.sort((a,b)=>a.t.start-b.t.start);
+}
+function renderBookings(){
+ const host=$("myBookings");if(!host)return;
+ const items=bookingList();
+ if(!items.length){host.hidden=true;host.innerHTML="";return}
+ host.hidden=false;
+ const now=Date.now();
+ host.innerHTML=`<h2>${esc(tr("myBookings"))}</h2><div class="grid">`+items.map(({t,x})=>{
+  const st=bookStage(t),per=seatsOf(t),over=now>t.start+2*3600e3,pct=over?100:st<0?10:[33,66,100][st];
+  const team=x.team||slotTeam(t.id,x.s)||"–";
+  const role=x.role||(J.find(j=>j.tid===t.id&&j.slot===x.s&&x.ign&&j.ign===x.ign)||{}).role||"–";
+  const label=over?tr("finished"):st<0?tr("checking"):tr("st"+st);
+  const cur=over?2:Math.max(0,st);
+  const rm=ROOM[t.id];
+  const info=over?"":st===2?`<div class="pay">${esc(tr("roomId"))}: <b>${esc(rm.id)}</b>${rm.pass?` · ${esc(tr("password"))}: <b>${esc(rm.pass)}</b>`:""}</div>
+    <div class="copyrow"><button class="btn ghost sm" type="button" data-copy="${esc(rm.id)}">${esc(tr("copyId"))}</button>${rm.pass?`<button class="btn ghost sm" type="button" data-copy="${esc(rm.pass)}">${esc(tr("copyPass"))}</button>`:""}<button class="btn sm" type="button" data-ff>${esc(tr("openFF"))}</button></div>`
+   :st===1?`<p class="meta" style="margin:0">${esc(tr("roomSoon"))}</p>`:st===0?`<p class="meta" style="margin:0">${esc(tr("payWait"))}</p>`:"";
+  const res=resultFor(t,x);
+  const resHtml=res?`<div class="result">🏁 ${esc(tr("result"))}: ${esc(tr("rank"))} #${Number(res.rank)||"–"} · ${Number(res.kills)||0} ${esc(tr("stK").toLowerCase())} · ${money(res.prize)}</div>`:"";
+  const rate=now>t.start+75*60000&&!RATED[t.id]&&ACC.has(t.id)?`<div class="rate"><b>${esc(tr("rateAsk"))}</b><div class="faces">${["😞","🙁","😐","🙂","😍"].map((f,i)=>`<button type="button" data-rate="${t.id}" data-n="${i+1}" aria-label="${i+1}/5">${f}</button>`).join("")}</div></div>`:"";
+  return `<article class="card bk"><div class="row"><h3>${esc(t.name)}</h3><span class="tag g-${(MODE[t.mode]||{}).g||"br"}">${esc(MODES[t.mode]||t.mode)}</span></div>
+   <div class="facts"><div><small>${esc(tr("slot"))}</small><b>${esc(slotName(t,x.s))}</b></div>${per>1?`<div><small>${esc(tr("team"))}</small><b>${esc(team)}</b></div>`:""}<div><small>${esc(tr("role"))}</small><b>${esc(role)}</b></div></div>
+   ${x.c?`<div class="refline">${esc(tr("ref"))}: <b>${esc(x.c)}</b><button class="btn ghost sm" type="button" data-copy="${esc(x.c)}">${esc(tr("copyRef"))}</button></div>`:""}
+   <div class="stat s${Math.max(0,st)}">${esc(label)}</div>
+   <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${esc(label)}"><i style="width:${pct}%"></i></div>
+   <div class="bsteps"><span class="${cur>=0?"on":""} ${cur===0?"cur":""}">${esc(tr("stepPending"))}</span><span class="${cur>=1?"on":""} ${cur===1?"cur":""}">${esc(tr("stepConfirmed"))}</span><span class="${cur>=2?"on":""} ${cur===2?"cur":""}">${esc(tr("stepRoom"))}</span></div>
+   ${info}${resHtml}${rate}
+   <div class="row">${over?`<span class="cd live">${esc(tr("finished"))}</span>`:`<span class="cd" data-cd="${t.start}">${esc(cdText(t.start))}</span>`}<div class="acts"><button class="btn ghost sm" type="button" data-details="${t.id}">${esc(tr("details"))}</button>${over?"":`<button class="btn ghost sm" type="button" data-cal="${t.id}">${esc(tr("addCal"))}</button>`}<button class="btn sm" type="button" data-share-slot="${t.id}" data-slot="${x.s}">${esc(tr("shareSlot"))}</button></div></div></article>`;
+ }).join("")+`</div>`;
+ tick();
+}
+$("myBookings").addEventListener("click",e=>{
+ const c=e.target.closest("[data-copy]");if(c){copyText(c.dataset.copy);return}
+ if(e.target.closest("[data-ff]")){openFreeFire();return}
+ const cal=e.target.closest("[data-cal]");if(cal){addToCalendar(cal.dataset.cal);return}
+ const r=e.target.closest("[data-rate]");if(r){rateMatch(r.dataset.rate,+r.dataset.n);return}
+ const d=e.target.closest("[data-details]");if(d){showTournamentDetails(d.dataset.details);return}
+ const sh=e.target.closest("[data-share-slot]");if(sh)shareSlot(sh.dataset.shareSlot,+sh.dataset.slot);
+});
+
+// Skeleton cards while loading
+const skeleton=()=>`<div class="grid">${"<div class=\"skel\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i></div>".repeat(3)}</div>`;
+
+// Offline banner
+function netState(){const b=$("offBar");if(b)b.hidden=navigator.onLine!==false}
+window.addEventListener("online",netState);window.addEventListener("offline",netState);netState();
+
+// Pull to refresh
+(function(){
+ let y0=null,pull=0;const ind=$("ptr");
+ const busy=()=>document.querySelector("dialog[open]");
+ window.addEventListener("touchstart",e=>{y0=(window.scrollY<=0&&!busy()&&e.touches.length===1)?e.touches[0].clientY:null;pull=0},{passive:true});
+ window.addEventListener("touchmove",e=>{
+  if(y0==null)return;pull=e.touches[0].clientY-y0;
+  if(pull>20){ind.textContent=pull>90?tr("ptrRelease"):tr("ptrPull");ind.classList.add("show")}else ind.classList.remove("show");
+ },{passive:true});
+ window.addEventListener("touchend",()=>{
+  if(y0!=null&&pull>90){ind.textContent=tr("ptrLoad");ind.classList.add("show");setTimeout(()=>location.reload(),250)}
+  else ind.classList.remove("show");
+  y0=null;pull=0;
+ },{passive:true});
+})();
+
+// Quick guide (first visit)
+let onbStep=0;
+function onbRender(){
+ const steps=[["🎯","onb1t","onb1d"],["💳","onb2t","onb2d"],["🔑","onb3t","onb3d"]],c=steps[onbStep],last=onbStep===steps.length-1;
+ $("onbBody").innerHTML=`<div class="onb"><div class="big" aria-hidden="true">${c[0]}</div><h3 style="margin:0">${esc(tr(c[1]))}</h3><p class="meta" style="margin:0">${esc(tr(c[2]))}</p>
+  <div class="dots">${steps.map((_,i)=>`<i class="${i===onbStep?"on":""}"></i>`).join("")}</div>
+  <div class="acts" style="width:100%">${last?"":`<button class="btn ghost" id="onbSkip" type="button">${esc(tr("onbSkip"))}</button>`}<button class="btn" id="onbNext" type="button">${esc(last?tr("onbGo"):tr("onbNext"))}</button></div></div>`;
+ const done=()=>{lsSet("tf_onb","1");$("onbDlg").close()};
+ if($("onbSkip"))$("onbSkip").onclick=done;
+ $("onbNext").onclick=()=>{if(last)done();else{onbStep++;onbRender()}};
+}
+function showGuide(){onbStep=0;onbRender();if(!$("onbDlg").open)$("onbDlg").showModal()}
+
 
 function card(t){
  const per=seatsOf(t),total=t.slots*per,n=taken(t.id),left=total-n,ended=t.start<=Date.now(),my=myList(t.id).map(x=>x.s).filter(x=>x>=0);let b="";
@@ -744,6 +923,7 @@ function card(t){
    ${prizeHtml}
    <div class="meta">${fmt(t.start)} · ${esc(t.map)}</div>
    <div class="slots" role="img" aria-label="${n} of ${total} seats taken">${b}</div>
+   ${left<=0&&!ended&&!my.length?`<div class="mine-line"><button class="btn ghost sm" type="button" data-wait="${t.id}">${esc(WAIT[t.id]?tr("waitOn"):tr("waitJoin"))}</button></div>`:""}
    ${my.length?`<div class="mine-line"><span>${esc(tr("youIn"))}: ${my.map(x=>slotName(t,x)).join(", ")}</span>${ended?"":` · <span class="cd" data-cd="${t.start}">${esc(cdText(t.start))}</span>`}<button class="btn ghost sm" type="button" data-share-slot="${t.id}" data-slot="${my[0]}">${esc(tr("shareSlot"))}</button></div>`:""}
    <div class="row"><span class="left">${ended?`<span class="badge ended" style="margin-left:0">${esc(tr("ended"))}</span>`:left>0?esc(tr("seatsLeft",left)):esc(tr("full"))}${almost?`<span class="badge almost">${esc(tr("almost"))}</span>`:""}</span>
    <div class="acts"><button class="btn ghost" type="button" data-details="${t.id}">${esc(tr("details"))}</button><div class="join-actions"><span class="join-help-wrap"><button class="join-help" type="button" data-join-help="${t.mode}" aria-label="${esc(tr("howJoin"))} ${esc(MODES[t.mode]||t.mode)}" title="${esc(tr("howJoin"))}">?</button><span class="join-help-label">${esc(tr("howJoin"))}</span></span><button class="btn" data-id="${t.id}" ${left>0&&!ended?"":"disabled"}>${ended?esc(tr("ended")):left>0?esc(tr("join")):esc(tr("full"))}</button></div></div></div></article>`;
@@ -756,17 +936,17 @@ function render(){
  $("stf").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.st===statusF)));
  const now=Date.now(),q=search.trim().toLowerCase();
  const list=T.filter(t=>MODE[t.mode]&&(cat==="all"||MODE[t.mode].g===cat)&&(sub==="all"||String(MODE[t.mode].seats)===sub)
-   &&(statusF==="all"||(statusF==="ended"?t.start<=now:t.start>now))
+   &&(statusF==="all"||(statusF==="ended"?t.start<=now:t.start>now))&&feeOk(t)
    &&(!q||[t.name,MODES[t.mode],t.map].some(x=>String(x||"").toLowerCase().includes(q))))
   .sort((a,b)=>{const ea=a.start<=now,eb=b.start<=now;if(ea!==eb)return ea?1:-1;
-   if(!ea){const fa=FAV.has(a.mode)?0:1,fb=FAV.has(b.mode)?0:1;if(fa!==fb)return fa-fb;return a.start-b.start}
+   if(!ea){if(sortF==="low"&&a.fee!==b.fee)return a.fee-b.fee;if(sortF==="high"&&a.fee!==b.fee)return b.fee-a.fee;if(sortF==="soon"){const fa=FAV.has(a.mode)?0:1,fb=FAV.has(b.mode)?0:1;if(fa!==fb)return fa-fb}return a.start-b.start}
    return b.start-a.start});
  const favG=g=>list.some(t=>MODE[t.mode].g===g[0]&&FAV.has(t.mode))?0:1;
  const parts=GROUPS.filter(g=>cat==="all"||g[0]===cat).sort((a,b)=>favG(a)-favG(b)).map(g=>{
   const ts=list.filter(t=>MODE[t.mode].g===g[0]);
   if(!ts.length)return cat==="all"?"":emptyState(g[1]);
   return `<div class="sec"><h3 class="sh">${g[1]}</h3><p class="sub2">${esc(I18N[LANG]["gd_"+g[0]]||g[2])}</p><div class="grid">${ts.map(card).join("")}</div></div>`}).join("");
- $("list").innerHTML=parts||(loadedT||T.length?emptyState():`<div class="empty loading">Loading tournaments…</div>`);
+ $("list").innerHTML=parts||(loadedT||T.length?emptyState():skeleton());
  $("list").querySelectorAll("button[data-details]").forEach(b=>b.onclick=()=>showTournamentDetails(b.dataset.details));
  $("list").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openJoin(b.dataset.id));
  $("list").querySelectorAll("button[data-join-help]").forEach(b=>b.onclick=()=>showJoinHelp(b.dataset.joinHelp));
@@ -782,7 +962,7 @@ function tick(){
  if(!nx){["h","m","s"].forEach(k=>$(k).textContent="--")}
  else{const r=Math.max(0,Math.floor((nx.start-Date.now())/1000));
   $("h").textContent=p(Math.floor(r/3600));$("m").textContent=p(Math.floor(r%3600/60));$("s").textContent=p(r%60)}
- document.querySelectorAll("[data-cd]").forEach(el=>{el.textContent=cdText(+el.dataset.cd)});
+ document.querySelectorAll("[data-cd]").forEach(el=>{const st=+el.dataset.cd,r=st-Date.now();el.textContent=cdText(st);el.classList.remove("far","near","urgent","live");el.classList.add(r<=0?"live":r<600000?"urgent":r<3600000?"near":"far")});
 }
 setInterval(tick,1000);
 
@@ -818,7 +998,7 @@ $("a2").onchange=()=>{$("a6").value={solo:48,duo:24,squad:12,cs1:2,cs2:2,cs4:2,l
 
 const dlg=$("dlg"),body=$("dbody"),close=()=>dlg.close();
 function doShare(text){
- const url=location.origin+"/";
+ const lm=/https?:\/\/\S+#match-[\w-]+/.exec(text),url=lm?lm[0]:location.origin+"/";if(lm)text=text.replace(lm[0],"").trim();
  if(navigator.share){navigator.share({title:"TF Tournaments",text,url}).catch(()=>{});return}
  window.open("https://wa.me/?text="+encodeURIComponent(text+" "+url),"_blank","noopener");
 }
@@ -841,11 +1021,13 @@ function showTournamentDetails(id){
   <h3 style="font-size:19px">Published details</h3>
   <div class="meta" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(t.details||"The organiser has not published additional details for this tournament yet.")}</div>
   <section style="margin-top:18px"><div class="row" style="align-items:center"><h3 style="font-size:19px;margin:0">Joined Players</h3><span class="meta">${taken(t.id)} joined</span></div><div id="joinedPlayers" style="margin-top:8px;max-height:240px;overflow-y:auto;overflow-x:hidden">Loading players…</div></section>
-  <div class="acts"><button class="btn ghost" id="dc">Close</button><button class="btn ghost" id="ds" type="button">Share</button>
+  <div class="acts"><button class="btn ghost" id="dc">Close</button><button class="btn ghost" id="ds" type="button">Share</button><button class="btn ghost" id="dlk" type="button">${esc(tr("copyLink"))}</button><button class="btn ghost" id="dcal" type="button">${esc(tr("addCal"))}</button>
 <button class="btn" id="dj" ${taken(t.id)>=t.slots*seatsOf(t)?"disabled":""}>Join tournament</button></div>`;
  $("dc").onclick=close;
- $("ds").onclick=()=>doShare(t.name+" ("+(MODES[t.mode]||t.mode)+") on "+fmt(t.start)+". Entry ₹"+(Number(t.fee)||0)+", prize pool / distribution: "+prizeText(t)+(t.kill?", ₹"+Number(t.kill)+" per kill":"")+". Join on TF Tournaments:");
+ $("ds").onclick=()=>doShare(t.name+" ("+(MODES[t.mode]||t.mode)+") on "+fmt(t.start)+". Entry ₹"+(Number(t.fee)||0)+", prize pool / distribution: "+prizeText(t)+(t.kill?", ₹"+Number(t.kill)+" per kill":"")+". Join on TF Tournaments: "+matchLink(t.id));
  $("dj").onclick=()=>{close();openJoin(t.id)};
+ $("dlk").onclick=()=>copyText(matchLink(t.id)).then(()=>{});
+ $("dcal").onclick=()=>addToCalendar(t.id);
  activeDetailsId=id;
  if(!dlg.open)dlg.showModal();
  renderJoinedPlayers(id);
@@ -961,6 +1143,7 @@ function pay(c){
  <label>Your UPI ID used for this payment<input id="payerupi" maxlength="100" autocomplete="off" placeholder="example@upi" inputmode="email" value=""></label>
  <p class="meta" style="margin:0">First tap <b>Open UPI app</b>. Complete the payment, return to this page, enter your UPI ID, then tap <b>Submit for verification</b>.</p>
  <p class="meta" style="margin:0">Your saved profile UPI ID is not used here. Enter the UPI ID used for this specific payment.</p>
+ <details><summary>${esc(tr("payHelpT"))}</summary><p class="meta" style="margin:8px 0 0">${esc(tr("payHelp"))}</p></details>
  <p class="err" id="e"></p>
  <div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="cp" type="button">Copy payment ID</button></div>
  <div class="acts"><button class="btn ghost" id="b">Back</button><button class="btn" id="joinpay" type="button">Open UPI app</button></div>`;
@@ -1005,14 +1188,14 @@ async function submit(c){
  try{localStorage.setItem("tf_regs",JSON.stringify(mine))}catch(e){}
  syncWatch();
  body.innerHTML=`<h3>Request submitted</h3><p style="margin:0">${slotName(t,c.slot)}${per>1?", seat "+(got+1):""} in ${esc(t.name)} is reserved as <b>Pending payment verification</b>. Your slot is not confirmed yet. An admin must verify the payment before room details become available. We’ll send updates to ${esc(v.phone)}.</p>
- <div class="code" aria-label="Registration code">${code}</div><div class="acts"><button class="btn ghost" id="shr" type="button">${esc(tr("shareSlot"))}</button><button class="btn" id="o">Done</button></div>`;
- $("o").onclick=close;$("shr").onclick=()=>shareSlot(t.id,c.slot);render();
+ <div class="code" aria-label="Registration code">${code}</div><p class="meta" style="margin:0">${esc(tr("refTip"))}</p><div class="copyrow"><button class="btn ghost sm" id="cpc" type="button">${esc(tr("copyRef"))}</button><button class="btn ghost sm" id="cal" type="button">${esc(tr("addCal"))}</button><button class="btn ghost sm" id="shr" type="button">${esc(tr("shareSlot"))}</button></div><div class="acts"><button class="btn" id="o">Done</button></div>`;
+ $("o").onclick=close;$("shr").onclick=()=>shareSlot(t.id,c.slot);$("cpc").onclick=()=>copyText(code);$("cal").onclick=()=>addToCalendar(t.id);render();
 }
 dlg.addEventListener("click",e=>{if(e.target===dlg)close()});
 
 applyStatic();render();tick();
-onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));loadedT=true;render();syncWatch();saveCache()},()=>{});
-onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));render();if(activeDetailsId&&dlg.open)renderJoinedPlayers(activeDetailsId);saveCache()},()=>{});
+onSnapshot(collection(db,"tournaments"),s=>{T=s.docs.map(d=>({id:d.id,...d.data()}));loadedT=true;render();syncWatch();saveCache();tryOpenPending();checkWaitlist()},()=>{});
+onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));joinsLive=true;render();checkWaitlist();if(activeDetailsId&&dlg.open)renderJoinedPlayers(activeDetailsId);saveCache()},()=>{});
 function setAdmin(on){
  isAdmin=on;$("admin").hidden=!on;$("navAdmin").hidden=!on;$("navOut").hidden=!on;$("alogin").hidden=on;
  adminUnsubs.forEach(u=>u());adminUnsubs=[];
@@ -1034,13 +1217,20 @@ function profileScreen(message=""){
  const signed=!!auth.currentUser?.email;
  profileBody.innerHTML=`<h3>Player profile</h3>
  <p class="meta" style="margin:0">${signed?`Signed in as ${esc(auth.currentUser.email)}`:"Create an account or sign in to save your player profile and view your registration history."}</p>
- ${signed?`<label>In-game name<input id="pIgn" maxlength="24" value="${esc(playerProfile.ign||"")}"></label><label>Free Fire UID<input id="pUid" inputmode="numeric" maxlength="12" value="${esc(playerProfile.uid||"")}"></label><label>Preferred role<select id="pRole">${roleOptions(playerProfile.role||"")}</select></label><label>WhatsApp number<input id="pPhone" inputmode="tel" maxlength="15" value="${esc(playerProfile.phone||"")}"></label><label>UPI ID (private)<input id="pUpi" maxlength="100" value="${esc(playerProfile.upi||"")}"></label><div class="sec"><h3 class="sh">My registrations</h3><div id="myHistory" class="meta">Loading history…</div></div>`:`<label>Email<input id="pEmail" type="email" autocomplete="email" required></label><label>Password<input id="pPass" type="password" minlength="6" autocomplete="new-password" required></label><p class="meta" style="margin:0">New players: Create account. Existing players: Sign in. Use at least 6 characters for a new password.</p>`}
+ ${signed?`<label>In-game name<input id="pIgn" maxlength="24" value="${esc(playerProfile.ign||"")}"></label><label>Free Fire UID<input id="pUid" inputmode="numeric" maxlength="12" value="${esc(playerProfile.uid||"")}"></label><label>Preferred role<select id="pRole">${roleOptions(playerProfile.role||"")}</select></label><label>WhatsApp number<input id="pPhone" inputmode="tel" maxlength="15" value="${esc(playerProfile.phone||"")}"></label><label>UPI ID (private)<input id="pUpi" maxlength="100" value="${esc(playerProfile.upi||"")}"></label><div class="sec"><h3 class="sh">${esc(tr("statsTitle"))}</h3><div id="myStats" class="stats"></div></div><div class="sec"><h3 class="sh">My registrations</h3><div id="myHistory" class="meta">Loading history…</div></div>`:`<label>Email<input id="pEmail" type="email" autocomplete="email" required></label><label>Password<input id="pPass" type="password" minlength="6" autocomplete="new-password" required></label><p class="meta" style="margin:0">New players: Create account. Existing players: Sign in. Use at least 6 characters for a new password.</p>`}
  <p class="err" id="pErr">${esc(message)}</p><div class="acts">${signed?`<button class="btn" id="pSave" type="button">Save profile</button>`:`<button class="btn ghost" id="pCancel" type="button">Cancel</button><button class="btn ghost" id="pLogin" type="button">Sign in</button><button class="btn" id="pCreate" type="button">Create account</button>`}</div>`;
  if(!signed){$("pCancel").onclick=()=>profileDlg.close();$("pLogin").onclick=()=>playerAuth(false);$("pCreate").onclick=()=>playerAuth(true);return;}
  $("pSave").onclick=async()=>{const ign=$("pIgn").value.trim(),role=$("pRole").value,uid=$("pUid").value.trim(),phone=$("pPhone").value.trim().replace(/\s/g,""),upi=$("pUpi").value.trim();if(uid&&!/^\d{8,12}$/.test(uid))return $("pErr").textContent="Free Fire UID should be 8 to 12 digits.";if(phone&&!/^\+?\d{10,14}$/.test(phone))return $("pErr").textContent="Enter a valid WhatsApp number.";if(upi&&!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(upi))return $("pErr").textContent="Enter a valid UPI ID.";playerProfile={ign,uid,phone,role,upi,email:auth.currentUser.email};try{await setDoc(doc(db,"profiles",auth.currentUser.uid),{...playerProfile,updatedAt:Date.now()},{merge:true});$("pErr").textContent="Profile saved."}catch(e){$("pErr").textContent="Could not save profile. Firestore profile permissions may need updating."}};
  showPlayerHistory();
 }
-async function showPlayerHistory(){const host=$("myHistory");if(!host||!auth.currentUser?.email)return;try{const q=query(collection(db,"registrations"),where("owner","==",auth.currentUser.uid));const snap=await getDocs(q);if(!snap.size){host.textContent="No registrations found for this account yet.";return;}host.innerHTML=snap.docs.map(d=>{const r=d.data(),t=T.find(x=>x.id===r.tid);return `<div class="nt" style="margin:8px 0"><b class="t">${esc(t?.name||"Tournament")}</b><p>${esc(r.ign||"")} · ${esc(r.uid||"")} · ${Number.isInteger(r.slot)?"Slot "+(r.slot+1):"Registered"}</p><p>Registration date: ${r.at?new Date(r.at).toLocaleString():"Unknown"}</p></div>`}).join("")}catch(e){host.textContent="Could not load history. Your Firestore rules may need to allow players to read their own registrations."}}
+function renderStats(regs){
+ const host=$("myStats");if(!host)return;
+ const igns=new Set(regs.map(r=>String(r.ign||"").trim().toLowerCase()).concat([String(playerProfile.ign||"").trim().toLowerCase()]).filter(Boolean));
+ const my=LB.filter(e=>igns.has(String(e.player).trim().toLowerCase()));
+ const kills=my.reduce((a,e)=>a+(Number(e.kills)||0),0),earned=my.reduce((a,e)=>a+(Number(e.prize)||0),0),wins=my.filter(e=>Number(e.rank)===1).length;
+ host.innerHTML=[[regs.length,"stM"],[kills,"stK"],[wins,"stW"],[money(earned),"stE"]].map(([v,k])=>`<div><b>${esc(String(v))}</b><small>${esc(tr(k))}</small></div>`).join("");
+}
+async function showPlayerHistory(){const host=$("myHistory");if(!host||!auth.currentUser?.email)return;try{const q=query(collection(db,"registrations"),where("owner","==",auth.currentUser.uid));const snap=await getDocs(q);renderStats(snap.docs.map(d=>d.data()));if(!snap.size){host.textContent="No registrations found for this account yet.";return;}host.innerHTML=snap.docs.map(d=>{const r=d.data(),t=T.find(x=>x.id===r.tid);return `<div class="nt" style="margin:8px 0"><b class="t">${esc(t?.name||"Tournament")}</b><p>${esc(r.ign||"")} · ${esc(r.uid||"")} · ${Number.isInteger(r.slot)?"Slot "+(r.slot+1):"Registered"}</p><p>Registration date: ${r.at?new Date(r.at).toLocaleString():"Unknown"}</p></div>`}).join("")}catch(e){host.textContent="Could not load history. Your Firestore rules may need to allow players to read their own registrations."}}
 async function playerAuth(create){const email=$("pEmail").value.trim().toLowerCase(),pass=$("pPass").value;if(!email||!pass)return $("pErr").textContent="Enter your email and password.";try{if(create){const credential=EmailAuthProvider.credential(email,pass);if(auth.currentUser?.isAnonymous){await linkWithCredential(auth.currentUser,credential)}else{await createUserWithEmailAndPassword(auth,email,pass)}}else{await signInWithEmailAndPassword(auth,email,pass)}await loadPlayerProfile();profileScreen();}catch(e){const messages={"auth/email-already-in-use":"This email already has an account. Tap Sign in instead.","auth/weak-password":"Use a stronger password with at least 6 characters.","auth/invalid-credential":"Email or password is incorrect.","auth/credential-already-in-use":"This email is already linked to another account. Sign in instead."};$("pErr").textContent=messages[e.code]||"Could not complete account action: "+(e.code||"please try again");}}
 // Bottom navigation: tournament list and the existing player-profile flow.
 const bottomTournaments=$("bottomTournaments"),bottomProfile=$("bottomProfile");
@@ -1133,6 +1323,7 @@ function renderSettings(message=""){
  ${contacts.length?`<div class="support">${contacts.join("")}</div>`:`<p class="settings-note">Support contact details are not configured yet.</p>`}
  <button class="btn ghost" id="settingsLang" type="button">${esc(tr("langLabel"))}: ${LANG==="hi"?"Hinglish":"English"} · ${esc(tr("tapSwitch"))}</button>
  <button class="btn ghost" id="settingsSound" type="button">${esc(tr("soundLabel"))}: ${esc(soundOn?tr("on"):tr("off"))}</button>
+ <button class="btn ghost" id="settingsGuide" type="button">${esc(tr("guide"))}</button>
  <button class="btn ghost" id="settingsSuggest" type="button">Give a suggestion</button>
  <label>Your suggestion<textarea id="suggestionText" rows="4" maxlength="1200" placeholder="Share an idea or tell us what we can improve…"></textarea></label>
  <p class="err" id="suggestionErr">${esc(message)}</p>
@@ -1143,6 +1334,7 @@ function renderSettings(message=""){
  $("settingsNotifications").onclick=async()=>{if(!("Notification" in window)){renderSettings("Notifications are not supported by this browser.");return}try{const result=await Notification.requestPermission();renderSettings(result==="granted"?"Notifications enabled.":"Notification permission was not granted.")}catch(e){renderSettings("Could not change notification permission.")}};
  $("settingsContact").onclick=()=>{settingsDlg.close();location.hash="support"};
  $("settingsSuggest").onclick=()=>$("suggestionText").focus();
+ $("settingsGuide").onclick=()=>{settingsDlg.close();showGuide()};
  $("settingsLang").onclick=()=>{setLang(LANG==="hi"?"en":"hi");renderSettings()};
  $("settingsSound").onclick=()=>{soundOn=!soundOn;lsSet("tf_sound",soundOn?"1":"0");if(soundOn)feedback("submit");renderSettings()};
  $("sendSuggestion").onclick=async()=>{const msg=$("suggestionText").value.trim(),err=$("suggestionErr");if(!msg){err.textContent="Please write your suggestion first.";return}const u=auth.currentUser;if(!u){err.textContent="Please wait for the app to connect, then try again.";return}const btn=$("sendSuggestion");btn.disabled=true;try{const ref=doc(collection(db,"suggestions"));await setDoc(ref,{message:msg,uid:u.uid,email:u.email||"",createdAt:Date.now(),status:"new"});renderSettings("Suggestion sent to the admin. Thank you!");}catch(e){btn.disabled=false;err.textContent="Could not send suggestion. Firestore rules may need to allow signed-in players to create suggestions.";}};
@@ -1287,6 +1479,18 @@ function setBlack(on){
 }
 $("bm").onclick=()=>setBlack($("bm").getAttribute("aria-pressed")!=="true");
 try{if(localStorage.getItem("tf_black")==="1")setBlack(true)}catch(e){}
+
+// Deep link to one match (#match-<id>) and first-visit quick guide
+function tryOpenPending(){
+ if(!pendingMatch)return;
+ const t=T.find(x=>x.id===pendingMatch);
+ if(t){const id=pendingMatch;pendingMatch=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}showTournamentDetails(id)}
+ else if(loadedT){pendingMatch=null;toast(tr("notFound"))}
+}
+function matchFromHash(){const m=/^#match-([\w-]{1,60})$/.exec(location.hash);if(m){pendingMatch=m[1];tryOpenPending()}}
+window.addEventListener("hashchange",matchFromHash);
+matchFromHash();
+if(!lsGet("tf_onb","")&&!pendingMatch)setTimeout(()=>{if(!document.querySelector("dialog[open]"))showGuide()},1500);
 </script>
 </body>
 </html>
