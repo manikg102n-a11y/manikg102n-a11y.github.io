@@ -345,13 +345,36 @@ html,body{max-width:100%;overflow-x:clip}
 .onb .dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
 .onb .dots i.on{background:var(--flame)}
 @media(max-width:420px){.stats{grid-template-columns:1fr 1fr}}
+
+/* News & announcements */
+.nw{display:grid;gap:14px;grid-template-columns:1fr}
+#newsDlg{width:min(560px,calc(100vw - 24px))}
+.bottom-nav.four{grid-template-columns:repeat(4,1fr);gap:4px;padding:6px}
+.bottom-nav.four .bottom-tab{font-size:12px;gap:5px;flex-direction:column;min-height:56px;padding:0 2px;position:relative}
+@media(min-width:761px){.bottom-nav.four{width:520px}}
+.bottom-tab .ndot{position:absolute;top:8px;right:calc(50% - 20px);width:9px;height:9px;border-radius:50%;background:var(--flame);border:2px solid var(--panel)}
+.bottom-tab.active .ndot{background:var(--onflame);border-color:var(--flame)}
+.nw .post{background:var(--panel);border:2px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.nw .post.pin{border-color:var(--flame)}
+.nw .post img{width:100%;max-height:260px;object-fit:cover;display:block;background:var(--panel2);cursor:zoom-in}
+.nw .pb{padding:16px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.nw .pb h3{font-size:20px}
+.nw .pb p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.nw .pm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+.nw .cat{font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--panel2);color:var(--gold)}
+.nw .cat.free{background:var(--ok);color:#fff}.nw .cat.series{background:var(--gold);color:#241014}.nw .cat.tournament{background:var(--flame);color:var(--onflame)}
+.nw .new{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--flame);color:var(--onflame)}
+.nw .pb .btn{align-self:flex-start;margin-top:auto}
+#newsMore{margin-top:14px}
+.imgprev{max-width:100%;max-height:180px;border-radius:10px;border:2px solid var(--line);object-fit:cover}
+#imgDlg img{width:100%;display:block}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
-  <nav><a href="#scrims" data-i18n="navTournaments">Tournaments</a><a href="#" id="navLb" data-i18n="navLb">Leaderboard</a><a href="#how" data-i18n="navHow">How it works</a><a href="#rules" data-i18n="navRules">Rules</a><a href="#faq" data-i18n="navFaq">FAQ</a><a href="#support" data-i18n="navSupport">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
+  <nav><a href="#scrims" data-i18n="navTournaments">Tournaments</a><a href="#" id="navLb" data-i18n="navLb">Leaderboard</a><a href="#" id="navNews" data-i18n="navNews">News</a><a href="#how" data-i18n="navHow">How it works</a><a href="#rules" data-i18n="navRules">Rules</a><a href="#faq" data-i18n="navFaq">FAQ</a><a href="#support" data-i18n="navSupport">Support</a><a href="#admin" id="navAdmin" hidden>Admin</a><a href="#" id="navOut" hidden>Log out</a></nav>
   <div class="hr"><button class="bell" id="settingsBtn" aria-label="Open settings" aria-haspopup="dialog" aria-controls="settingsDlg" title="Settings" style="font-size:20px">⚙</button><button class="bell" id="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><i id="bdot" hidden></i></button><button class="mode" id="langBtn" type="button" aria-label="Change language">English</button><button class="mode" id="bm" aria-pressed="false">Black mode</button></div>
 </header>
 <main id="top">
@@ -417,6 +440,20 @@ html,body{max-width:100%;overflow-x:clip}
    </div>
    <div class="scroll"><table id="lbAT"></table></div>
   </div>
+  <h3 style="font-size:20px;margin:24px 0 10px">News &amp; announcements</h3>
+  <div class="form" id="newsForm">
+    <label>Title<input id="n1" maxlength="80" placeholder="Free Squad Cup this Sunday"></label>
+    <label>Type<select id="n2"><option value="tournament">Tournament</option><option value="series">Series</option><option value="free">Free tournament</option><option value="general">General news</option></select></label>
+    <label class="full">Message (text)<textarea id="n3" maxlength="1500" rows="4" placeholder="Write the announcement. Optional if you add a link or image."></textarea></label>
+    <label>Link (optional)<input id="n4" type="url" maxlength="500" placeholder="https://…"></label>
+    <label>Link button text<input id="n5" maxlength="30" placeholder="Join now"></label>
+    <label class="full">Image link (optional)<input id="n6" type="url" maxlength="500" placeholder="https://…/poster.jpg"></label>
+    <label class="full">Or upload an image<input id="n7" type="file" accept="image/*"></label>
+    <img class="imgprev full" id="nPrev" alt="Image preview" hidden>
+    <label class="full" style="display:flex;gap:8px;align-items:center;flex-direction:row"><input id="n8" type="checkbox" style="width:auto"> Pin to top</label>
+    <div class="full row"><p class="err" id="nErr"></p><button class="btn" id="nAdd" type="button">Publish announcement</button></div>
+  </div>
+  <div class="scroll"><table id="newsAT"></table></div>
   <h3 style="font-size:20px;margin:24px 0 10px">Player suggestions</h3>
   <div id="adminSuggestions" class="meta">No suggestions yet.</div>
 </section>
@@ -462,7 +499,7 @@ html,body{max-width:100%;overflow-x:clip}
 <footer><a href="#" id="alogin" style="float:right;color:var(--mute)">Admin</a>© 2026 TF Tournaments. Not affiliated with Garena or Free Fire. Players must be 18 or older, or have a parent’s permission.</footer>
 </div>
 
-<nav class="bottom-nav three" aria-label="Main navigation">
+<nav class="bottom-nav four" aria-label="Main navigation">
   <a class="bottom-tab active" id="bottomTournaments" href="#scrims" aria-current="page">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     <span data-i18n="navTournaments">Tournaments</span>
@@ -470,6 +507,10 @@ html,body{max-width:100%;overflow-x:clip}
   <button class="bottom-tab" id="bottomLeaderboard" type="button" aria-haspopup="dialog">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v6a4 4 0 0 1-8 0z"/><path d="M8 6H4c0 3 1 5 4 5M16 6h4c0 3-1 5-4 5"/><path d="M12 14v4M8 21h8M9 18h6"/></svg>
     <span data-i18n="navLb">Leaderboard</span>
+  </button>
+  <button class="bottom-tab" id="bottomNews" type="button" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h13a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"/><path d="M19 9h1a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2"/><path d="M8 9h7M8 13h7M8 16h4"/></svg>
+    <span data-i18n="navNews">News</span><i class="ndot" id="newsDot" hidden></i>
   </button>
   <button class="bottom-tab" id="bottomProfile" type="button">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
@@ -492,6 +533,13 @@ html,body{max-width:100%;overflow-x:clip}
 </div></dialog>
 <dialog id="settingsDlg" aria-label="Player settings"><div class="dlg" id="settingsBody"></div></dialog>
 <dialog id="ldlg"><div class="dlg"><h3>Admin login</h3><label>Email<input id="le" type="email" autocomplete="username"></label><label>Password<input id="lp" type="password" autocomplete="current-password"></label><p class="err" id="lerr"></p><div class="acts"><button class="btn ghost" id="lc">Cancel</button><button class="btn" id="ls">Log in</button></div></div></dialog>
+<dialog id="newsDlg" aria-label="News and announcements"><div class="dlg">
+  <h3 data-i18n="newsH">News &amp; announcements</h3>
+  <p class="meta" style="margin:0" data-i18n="newsSub">Latest updates on tournaments, series and free events.</p>
+  <div class="nw" id="newsList"><div class="empty">Loading news…</div></div>
+  <button class="btn ghost" id="newsMore" type="button" hidden>Show older posts</button>
+</div></dialog>
+<dialog id="imgDlg" aria-label="Image"><div class="dlg" style="padding:12px"><img id="imgBig" alt=""></div></dialog>
 <dialog id="ndlg"><div class="dlg" id="nbody"></div></dialog>
 <dialog id="dlg"><div class="dlg" id="dbody"></div></dialog>
 <dialog id="joinHelpDlg"><div class="dlg" id="joinHelpBody"></div></dialog>
@@ -537,13 +585,13 @@ const upcoming=()=>T.filter(t=>t.start>Date.now()).sort((a,b)=>a.start-b.start);
 
 // ===== Player experience upgrades: state, language, feedback =====
 const RACC=new Set(),watchingR={},ACC=new Set(),ACCKNOWN=new Set(),ROOM={},watching={},timers={},roomUn={},retries={},pollT={},ACCERR={};
-let LB=[],lbView="t";
+let LB=[],lbView="t",NEWS=[],newsAll=false,newsImg="";
 const money=n=>"₹"+(Number(n)||0).toLocaleString("en-IN");
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let LANG=lsGet("tf_lang","en")==="hi"?"hi":"en";
 const I18N={
- en:{navTournaments:"Tournaments",navLb:"Leaderboard",navHow:"How it works",navRules:"Rules",navFaq:"FAQ",navSupport:"Support",navProfile:"Profile",
+ en:{navTournaments:"Tournaments",navLb:"Leaderboard",navNews:"News",newsH:"News & announcements",newsSub:"Latest updates on tournaments, series and free events.",navHow:"How it works",navRules:"Rules",navFaq:"FAQ",navSupport:"Support",navProfile:"Profile",
   heroH:"Pay once. Land in a lobby that plays to win.",
   heroP:"Paid Free Fire tournaments: Solo, Duo and Squad, plus fast Clash Squad and Lone Wolf matches in 1v1, 2v2 and 4v4. Pick a slot, pay the entry fee, get your room ID before the match.",
   chip1:"Pick your slot",chip2:"Per-kill prizes",chip3:"Room ID 10 min before",seeOpen:"See open tournaments",shareApp:"Share with friends",
@@ -581,7 +629,7 @@ const I18N={
   onb1t:"Pick your slot",onb1d:"Choose a tournament, tap Join and pick a free slot.",onb2t:"Pay by UPI",onb2d:"Pay the entry fee, then enter the UPI ID you paid from. An admin confirms it.",onb3t:"Get your room ID",onb3d:"10 minutes before the match, the room ID and password appear on your booking card.",
   offline:"You’re offline. Showing saved matches.",ptrPull:"Pull to refresh",ptrRelease:"Release to refresh",ptrLoad:"Refreshing…",
   tConfirmed:"Slot confirmed",tRoom:"Room ready"},
- hi:{navTournaments:"Tournaments",navLb:"Leaderboard",navHow:"Kaise kaam karta hai",navRules:"Rules",navFaq:"FAQ",navSupport:"Madad",navProfile:"Profile",
+ hi:{navTournaments:"Tournaments",navLb:"Leaderboard",navNews:"News",newsH:"News aur announcements",newsSub:"Tournaments, series aur free events ke latest updates.",navHow:"Kaise kaam karta hai",navRules:"Rules",navFaq:"FAQ",navSupport:"Madad",navProfile:"Profile",
   heroH:"Ek baar pay karo. Aisi lobby mein utro jo jeetne ke liye khelti hai.",
   heroP:"Paid Free Fire tournaments: Solo, Duo aur Squad, saath mein fast Clash Squad aur Lone Wolf matches 1v1, 2v2 aur 4v4 mein. Slot chuno, entry fee pay karo, match se pehle room ID pao.",
   chip1:"Apna slot chuno",chip2:"Har kill pe prize",chip3:"Room ID 10 min pehle",seeOpen:"Open tournaments dekho",shareApp:"Doston ko share karo",
@@ -1215,6 +1263,7 @@ onSnapshot(collection(db,"joins"),s=>{J=s.docs.map(d=>({id:d.id,...d.data()}));j
 function setAdmin(on){
  isAdmin=on;$("admin").hidden=!on;$("navAdmin").hidden=!on;$("navOut").hidden=!on;$("alogin").hidden=on;
  adminUnsubs.forEach(u=>u());adminUnsubs=[];
+ renderNews();
  if(on){
   adminUnsubs.push(onSnapshot(collection(db,"registrations"),s=>{R=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},()=>{}));
   adminUnsubs.push(onSnapshot(collection(db,"verified"),s=>{V=new Set(s.docs.map(d=>d.id));render()},()=>{}));
@@ -1504,6 +1553,71 @@ document.querySelectorAll("dialog").forEach(d=>{
  els.forEach(e=>{e.classList.add("reveal");io.observe(e)});
 })();
 document.addEventListener("click",e=>{try{if(e.target.closest&&e.target.closest("button,.btn,.tile,.bottom-nav *")&&navigator.vibrate)navigator.vibrate(8)}catch(x){}},true);
+
+// News & announcements
+const NCAT={tournament:"Tournament",series:"Series",free:"Free tournament",general:"News"};
+const safeUrl=u=>{try{const x=new URL(String(u||"").trim());return(x.protocol==="https:"||x.protocol==="http:")?x.href:""}catch(e){return""}};
+function renderNews(){
+ const host=$("newsList");if(!host)return;
+ const list=NEWS.slice().sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||(b.at||0)-(a.at||0));
+ const shown=newsAll?list:list.slice(0,6);
+ if(!list.length)host.innerHTML='<div class="empty">No announcements yet. Check back soon.</div>';
+ else host.innerHTML=shown.map(n=>{
+  const img=safeUrl(n.image)||(/^data:image\//.test(n.image||"")?n.image:""),link=safeUrl(n.link),isNew=Date.now()-(n.at||0)<2*864e5;
+  return `<article class="post${n.pin?" pin":""}">${img?`<img src="${esc(img)}" alt="${esc(n.title)}" loading="lazy" data-big="${esc(n.id)}">`:""}<div class="pb"><div class="pm"><span class="cat ${esc(n.cat)}">${esc(NCAT[n.cat]||"News")}</span>${isNew?'<span class="new">NEW</span>':""}${n.pin?"<span>📌 Pinned</span>":""}<span>${n.at?new Date(n.at).toLocaleDateString([], {day:"numeric",month:"short"}):""}</span></div><h3>${esc(n.title)}</h3>${n.text?`<p>${esc(n.text)}</p>`:""}${link?`<a class="btn sm" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(n.linkText||"Open link")}</a>`:""}</div></article>`}).join("");
+ const more=$("newsMore");if(more){more.hidden=list.length<=6;more.textContent=newsAll?"Show fewer":"Show older posts"}
+ host.querySelectorAll("[data-big]").forEach(i=>i.onclick=()=>{$("imgBig").src=i.src;$("imgDlg").showModal()});
+ const at=$("newsAT");if(at){at.innerHTML='<tr><th>Title</th><th>Type</th><th>Date</th><th></th></tr>'+list.map(n=>`<tr><td>${esc(n.title)}${n.pin?" 📌":""}</td><td>${esc(NCAT[n.cat]||"News")}</td><td>${n.at?new Date(n.at).toLocaleDateString():""}</td><td><button class="btn ghost sm" type="button" data-ndel="${esc(n.id)}">Delete</button></td></tr>`).join("");
+  at.querySelectorAll("[data-ndel]").forEach(b=>b.onclick=async()=>{if(!isAdmin||!confirm("Delete this announcement?"))return;try{await deleteDoc(doc(db,"announcements",b.dataset.ndel))}catch(e){$("nErr").textContent="Could not delete. Check Firestore rules for announcements."}})}
+}
+$("newsMore").onclick=()=>{newsAll=!newsAll;renderNews()};
+$("imgDlg").addEventListener("click",e=>{if(e.target===$("imgDlg"))$("imgDlg").close()});
+// Upload: shrink the picture and store it inside the announcement (no extra storage needed)
+$("n7").onchange=e=>{
+ const f=e.target.files[0],err=$("nErr"),pv=$("nPrev");newsImg="";pv.hidden=true;
+ if(!f)return;
+ if(!/^image\//.test(f.type)){err.textContent="Please choose an image file.";return}
+ const rd=new FileReader();
+ rd.onerror=()=>{err.textContent="Could not read that image."};
+ rd.onload=()=>{const im=new Image();
+  im.onerror=()=>{err.textContent="Could not open that image."};
+  im.onload=()=>{
+   const sc=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");
+   c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+   let q=.8,d=c.toDataURL("image/jpeg",q);
+   while(d.length>600000&&q>.3){q-=.1;d=c.toDataURL("image/jpeg",q)}
+   if(d.length>600000){err.textContent="Image is too large. Use a smaller one or paste an image link.";return}
+   newsImg=d;pv.src=d;pv.hidden=false;err.textContent=""};
+  im.src=rd.result};
+ rd.readAsDataURL(f);
+};
+$("nAdd").onclick=async()=>{
+ const err=$("nErr"),title=$("n1").value.trim(),text=$("n3").value.trim(),link=$("n4").value.trim(),imgUrl=$("n6").value.trim();
+ if(!isAdmin)return err.textContent="Admin login required.";
+ if(!title)return err.textContent="Enter a title.";
+ if(link&&!safeUrl(link))return err.textContent="Link must start with http:// or https://";
+ if(imgUrl&&!safeUrl(imgUrl))return err.textContent="Image link must start with http:// or https://";
+ const image=newsImg||safeUrl(imgUrl);
+ if(!text&&!link&&!image)return err.textContent="Add some text, a link or an image.";
+ const b=$("nAdd");b.disabled=true;
+ try{
+  await setDoc(doc(collection(db,"announcements")),{title,cat:$("n2").value,text,link:safeUrl(link),linkText:$("n5").value.trim(),image,pin:$("n8").checked,at:Date.now()});
+  err.textContent="";["n1","n3","n4","n5","n6","n7"].forEach(i=>$(i).value="");$("n8").checked=false;newsImg="";$("nPrev").hidden=true;toast("Announcement published");
+ }catch(e){err.textContent="Could not publish. Check Firestore rules for the announcements collection."}
+ b.disabled=false;
+};
+{const nd=$("newsDlg"),bn=$("bottomNews");
+ const seen=()=>Number(lsGet("tf_news_seen","0"))||0;
+ window.newsDotUpd=()=>{const last=NEWS.reduce((m,n)=>Math.max(m,n.at||0),0);$("newsDot").hidden=nd.open||!(last>seen())};
+ const openNews=()=>{renderNews();lsSet("tf_news_seen",String(Date.now()));$("newsDot").hidden=true;bn.classList.add("active");bn.setAttribute("aria-current","page");bottomTournaments.classList.remove("active");bottomTournaments.removeAttribute("aria-current");nd.showModal()};
+ const closed=()=>{bn.classList.remove("active");bn.removeAttribute("aria-current");if(!profileDlg.open&&!$("lbDlg").open){bottomTournaments.classList.add("active");bottomTournaments.setAttribute("aria-current","page")}};
+ bn.onclick=openNews;$("navNews").onclick=e=>{e.preventDefault();openNews()};
+ nd.addEventListener("click",e=>{if(e.target===nd)nd.close()});
+ nd.addEventListener("close",closed);nd.addEventListener("cancel",closed);
+ bottomProfile.addEventListener("click",()=>{bn.classList.remove("active");bn.removeAttribute("aria-current")});
+ $("bottomLeaderboard").addEventListener("click",()=>{bn.classList.remove("active");bn.removeAttribute("aria-current")});}
+onSnapshot(collection(db,"announcements"),s=>{NEWS=s.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n.title);renderNews();if(window.newsDotUpd)window.newsDotUpd()},()=>{$("newsList").innerHTML='<div class="empty">News unavailable right now.</div>'});
 
 // Support buttons
 (function(){
