@@ -389,6 +389,12 @@ table.jp .jp-seat{margin-left:4px;font-size:10px;color:var(--mute);border:1px so
 table.jp tbody tr:nth-child(even){background:color-mix(in srgb,var(--ink) 4%,transparent)}
 
 /* ===== First-visit install popup ===== */
+.dltop{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px calc(8px);padding-top:calc(8px + env(safe-area-inset-top,0px));background:#e63946;color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.dltop[hidden]{display:none}
+header{top:var(--dlh,0px)!important}
+.dltop .dltxt{font-size:13px;line-height:1.3;font-weight:600;min-width:0}
+.dltop .btn{flex:none;background:#fff;color:#b3131f;border:0;font-weight:800;white-space:nowrap}
+
 .dlpop{position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;background:rgba(8,3,6,.7);backdrop-filter:blur(6px);padding:12px;animation:dlIn .25s ease-out}
 .dlpop[hidden]{display:none}
 .dlbox{width:min(420px,100%);background:var(--panel);color:var(--ink);border:2px solid var(--flame);border-radius:24px;padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));text-align:center;display:grid;gap:10px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
@@ -404,6 +410,7 @@ table.jp tbody tr:nth-child(even){background:color-mix(in srgb,var(--ink) 4%,tra
 </style>
 </head>
 <body>
+<div class="dltop" id="dlTop" hidden role="region" aria-label="Install app"><span class="dltxt">⚠️ <b data-i18n="dlTopT">Install the app to get Room ID &amp; password on time</b></span><button class="btn sm" id="dlTopGo" type="button" data-i18n="dlGo">Install app</button></div>
 <div class="wrap">
 <header>
   <a class="logo" href="#top">TF<b> Tournaments</b></a>
@@ -648,7 +655,7 @@ const I18N={
   allModes:"Show all modes",seeEnded:"See ended matches",followWa:"Follow on WhatsApp",
   emptyNotes:"Join a tournament to see its updates here. Once your payment is confirmed, you get a reminder and the room ID 10 minutes before the match.",browse:"Browse tournaments",
   emptyLb:"No results published yet. Winners will show up here after the next match.",
-  installMsg:"Add TF Tournaments to your home screen for one-tap access.",dlT:"Get the TF Tournaments app",dlD:"Install it free for faster loading, one-tap access and match alerts. No app store needed.",dlGo:"Install app",dlNo:"Maybe later",dlImp:"VERY IMPORTANT",dlWarn:"Install the app to get the joined room ID and password on time. Without it you may miss the match alert and your slot.",dlHow:"Tap your browser menu (⋮), then choose “Install app” or “Add to Home screen”.",installBtn:"Add to home screen",notNow:"Not now",iosHint:"Tap the Share button in Safari, then choose “Add to Home Screen”.",
+  installMsg:"Add TF Tournaments to your home screen for one-tap access.",dlT:"Get the TF Tournaments app",dlD:"Install it free for faster loading, one-tap access and match alerts. No app store needed.",dlGo:"Install app",dlNo:"Maybe later",dlTopT:"Install the app to get Room ID & password on time",dlImp:"VERY IMPORTANT",dlWarn:"Install the app to get the joined room ID and password on time. Without it you may miss the match alert and your slot.",dlHow:"Tap your browser menu (⋮), then choose “Install app” or “Add to Home screen”.",installBtn:"Add to home screen",notNow:"Not now",iosHint:"Tap the Share button in Safari, then choose “Add to Home Screen”.",
   langLabel:"Language",tapSwitch:"tap to switch",soundLabel:"Sounds & vibration",on:"On",off:"Off",
   copy:"Copy",copied:"Copied",copyId:"Copy room ID",copyPass:"Copy password",openFF:"Open Free Fire",openFFHint:"Open Free Fire on your phone and paste the room ID.",
   addCal:"Add to calendar",ref:"Ref",copyLink:"Copy link",linkCopied:"Link copied",notFound:"That match was not found. It may have been removed.",
@@ -686,7 +693,7 @@ const I18N={
   allModes:"Saare modes dikhao",seeEnded:"Khatam hue matches dekho",followWa:"WhatsApp pe follow karo",
   emptyNotes:"Tournament join karo, uske updates yahan dikhenge. Payment confirm hote hi reminder aur match se 10 minute pehle room ID milega.",browse:"Tournaments dekho",
   emptyLb:"Abhi koi result publish nahi hua. Agle match ke baad winners yahan dikhenge.",
-  installMsg:"TF Tournaments ko home screen pe add karo, ek tap mein khul jayega.",dlT:"TF Tournaments app download karo",dlD:"Free install karo: fast loading, ek tap mein open aur match alerts. App store ki zarurat nahi.",dlGo:"App install karo",dlNo:"Baad mein",dlImp:"BAHUT ZARURI",dlWarn:"Joined room ID aur password time pe pane ke liye app install karo. Install nahi kiya to match alert aur aapka slot miss ho sakta hai.",dlHow:"Browser menu (⋮) kholo, phir “Install app” ya “Add to Home screen” chuno.",installBtn:"Home screen pe add karo",notNow:"Abhi nahi",iosHint:"Safari mein Share button dabao, phir “Add to Home Screen” chuno.",
+  installMsg:"TF Tournaments ko home screen pe add karo, ek tap mein khul jayega.",dlT:"TF Tournaments app download karo",dlD:"Free install karo: fast loading, ek tap mein open aur match alerts. App store ki zarurat nahi.",dlGo:"App install karo",dlNo:"Baad mein",dlTopT:"Room ID & password time pe pane ke liye app install karo",dlImp:"BAHUT ZARURI",dlWarn:"Joined room ID aur password time pe pane ke liye app install karo. Install nahi kiya to match alert aur aapka slot miss ho sakta hai.",dlHow:"Browser menu (⋮) kholo, phir “Install app” ya “Add to Home screen” chuno.",installBtn:"Home screen pe add karo",notNow:"Abhi nahi",iosHint:"Safari mein Share button dabao, phir “Add to Home Screen” chuno.",
   langLabel:"Bhasha",tapSwitch:"badalne ke liye tap karo",soundLabel:"Sound aur vibration",on:"On",off:"Off",
   copy:"Copy karo",copied:"Copy ho gaya",copyId:"Room ID copy karo",copyPass:"Password copy karo",openFF:"Free Fire kholo",openFFHint:"Apne phone pe Free Fire kholo aur room ID paste karo.",
   addCal:"Calendar mein add karo",ref:"Ref",copyLink:"Link copy karo",linkCopied:"Link copy ho gaya",notFound:"Ye match nahi mila. Shayad hata diya gaya hai.",
@@ -840,24 +847,39 @@ $("installGo").onclick=async()=>{
 };
 $("installNo").onclick=()=>{lsSet("tf_inst_x",String(Date.now()));$("installBar").hidden=true};
 showInstall();
-// First-visit install popup (browser only, never inside the installed app)
+// Install popup (first visit) + persistent top bar until the app is installed
 (function(){
- const pop=$("dlPop");if(!pop)return;
- if(isStandalone()||lsGet("tf_dl_seen","0")==="1")return;
- const hide=()=>{pop.hidden=true;lsSet("tf_dl_seen","1");lsSet("tf_inst_x",String(Date.now()));$("installBar").hidden=true};
+ const pop=$("dlPop"),top=$("dlTop");if(!pop||!top)return;
+ const installed=()=>isStandalone()||lsGet("tf_installed","0")==="1";
+ const refresh=()=>{
+  const show=!installed()&&lsGet("tf_dl_seen","0")==="1"&&pop.hidden;
+  top.hidden=!show;
+  document.documentElement.style.setProperty("--dlh",show?top.offsetHeight+"px":"0px");
+  if(show)$("installBar").hidden=true;
+ };
+ const markInstalled=()=>{lsSet("tf_installed","1");lsSet("tf_dl_seen","1");pop.hidden=true;top.hidden=true;$("installBar").hidden=true};
+ window.addEventListener("appinstalled",markInstalled);
+ if(isStandalone()){lsSet("tf_installed","1");return}
+ // Browser tab on an Android phone that already has the app installed
+ try{if(navigator.getInstalledRelatedApps)navigator.getInstalledRelatedApps().then(a=>{if(a&&a.length)markInstalled()}).catch(()=>{})}catch(e){}
+ const later=()=>{pop.hidden=true;lsSet("tf_dl_seen","1");refresh()};
  const open=()=>{
   if($("onbDlg")&&$("onbDlg").open){setTimeout(open,800);return}
-  pop.hidden=false;$("dlGo").focus();
+  if(installed())return;
+  top.hidden=true;pop.hidden=false;$("dlGo").hidden=false;$("dlNo").textContent=tr("dlNo");$("dlD").textContent=tr("dlD");$("dlGo").focus();
  };
- $("dlNo").onclick=hide;
- pop.addEventListener("click",e=>{if(e.target===pop)hide()});
- document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!pop.hidden)hide()});
- $("dlGo").onclick=async()=>{
-  if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch(e){}deferredPrompt=null;hide()}
-  else{$("dlD").textContent=isIOS?tr("iosHint"):tr("dlHow");$("dlGo").hidden=true;$("dlNo").textContent="OK"}
+ const install=async()=>{
+  if(deferredPrompt){const p=deferredPrompt;deferredPrompt=null;p.prompt();try{const r=await p.userChoice;if(r&&r.outcome==="accepted")markInstalled();else later()}catch(e){later()}}
+  else{pop.hidden=false;$("dlD").textContent=isIOS?tr("iosHint"):tr("dlHow");$("dlGo").hidden=true;$("dlNo").textContent="OK";top.hidden=true}
  };
- window.addEventListener("appinstalled",()=>{pop.hidden=true;lsSet("tf_dl_seen","1")});
- setTimeout(open,1500);
+ $("dlNo").onclick=later;
+ pop.addEventListener("click",e=>{if(e.target===pop)later()});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!pop.hidden)later()});
+ $("dlGo").onclick=install;
+ $("dlTopGo").onclick=()=>{if(deferredPrompt)install();else open()};
+ window.addEventListener("beforeinstallprompt",refresh);window.addEventListener("resize",refresh);
+ refresh();
+ if(lsGet("tf_dl_seen","0")!=="1")setTimeout(open,1500);
 })();
 $("langBtn").onclick=()=>setLang(LANG==="hi"?"en":"hi");
 
